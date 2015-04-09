@@ -3,18 +3,19 @@ import java.sql.ResultSetMetaData;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 
 
 public class Cluster {
 	public ArrayList<Column> attributes;
-	public ArrayList<Cell> rows;
-	//public Map<Integer, Map<Integer, Cell>> cells;
+	//public ArrayList<Cell> rows;
+	public Map<Integer, Map<Column, Cell>> cells;
 	
 	public Cluster(){
-		rows = new ArrayList<Cell>();
+		//rows = new ArrayList<Cell>();
 		attributes = new ArrayList<Column>();
-		//cells = new HashMap<Integer, Map<Integer, Cell>>();
+		cells = new HashMap<Integer, Map<Column, Cell>>();
 	}
 	
 	public static Cluster clusterFromQuery(String select, String from, String where){
@@ -43,8 +44,8 @@ public class Cluster {
 				boolean first = true;
 				do{
 					int rowId = rs.getInt(1);
-					//Map<Integer, Cell> currentRow = new HashMap<Integer, Cell>();
-					//ret.cells.put(rowId, currentRow);
+					Map<Column, Cell> currentRow = new HashMap<Column, Cell>();
+					ret.cells.put(rowId, currentRow);
 					Cell.Type type = null;
 					String columnName = null;
 					String colValString = null;
@@ -78,13 +79,12 @@ public class Cluster {
 							up.setDown(cur);
 							up = up.getRight();
 						}
-						//currentRow.put(i, cur);
 						if(i == 2){
-							ret.rows.add(cur);
+							//ret.rows.add(cur);
 							firstUp = cur;
 						}
 						if(first){
-							Column col = new Column(cur);
+							Column col = new Column(cur, total);
 							ResultSet dist = com.query("Select "+columnName+", count(*) as cnt  "+from+ " "+where+" GROUP BY "+columnName);
 							if(dist == null){
 								System.out.println("Error with query2");
@@ -98,17 +98,20 @@ public class Cluster {
 									switch(type){
 										case INT:
 											int vali = dist.getInt(columnName);
-											col.addToProb(vali, cnt, total);
+											col.addToProb(vali, cnt);
 											break;
 										case VARCHAR:
 											String vals = dist.getString(columnName);
-											col.addToProb(vals, cnt, total);
+											col.addToProb(vals, cnt);
 											break;
 									}
 								}while(dist.next());
 								dist.close();
+								currentRow.put(col, cur);
 								ret.attributes.add(col);
 							}
+						}else{
+							currentRow.put(ret.attributes.get(i-2), cur);
 						}
 						
 						if(i == columnsNumber){
@@ -131,9 +134,9 @@ public class Cluster {
 	public String toString(){
 		System.out.println("Printing");
 		String ret = "";
-		/*for(int row : cells.keySet()){
+		for(int row : cells.keySet()){
 			boolean first = true;
-			for(int col : cells.get(row).keySet()){
+			for(Column col : cells.get(row).keySet()){
 				if(!first)
 					ret += ", ";
 				ret += cells.get(row).get(col).toString();
@@ -142,7 +145,7 @@ public class Cluster {
 			ret += "\n";
 			System.out.print(ret);
 			ret = "";
-		}*/
+		}/*
 		Cell cur = rows.get(0);
 		Cell below = cur.getDown();
 		assert(cur != null);
@@ -166,7 +169,7 @@ public class Cluster {
 			}else{
 				break printLoop;
 			}
-		}
+		}*/
 		return ret;
 	}
 	
@@ -174,6 +177,31 @@ public class Cluster {
 		for(Column c : attributes){
 			System.out.println(c);
 			return;
+		}
+	}
+
+	public static Cluster makeBiggest(Cluster m, Cluster cluster, Column a) {
+		
+		switch(a.type){
+			case INT:
+				int mostCommon = -99999;
+				int freq = Integer.MIN_VALUE;
+				for(Entry<Integer, Integer> e : a.value_Int.entrySet()){
+					if( e.getValue() > freq){
+						freq = e.getValue();
+						mostCommon = e.getKey();
+					}
+				}
+				Cell cur = a.top;
+				while(cur != null){
+					if(cur.val_Int == mostCommon && m.cells.containsKey(cur.rowId) && cluster.cells.containsKey(cur.rowId)){
+						
+					}
+					cur = cur.getDown();
+				}
+				break;
+			case VARCHAR:
+				break;
 		}
 	}
 }

@@ -10,49 +10,65 @@ import java.util.Map.Entry;
 public class Column{
 	public Cell top;
 	public final Cell.Type type;
-	public Map<String, Double> probability_String;
-	public Map<Integer, Double> probability_Int;
+	public Map<String, Integer> value_String;
+	public Map<Integer, Integer> value_Int;
 	public final String attrName;
+	public final int numRows;
 	
-	public Column(Cell top){
+	public Column(Cell top, int numRows){
 		this.top = top;
 		this.type = top.type;
 		this.attrName = top.colName;
+		this.numRows = numRows;
 		switch(type){
 			case INT:
-				probability_Int = new HashMap<Integer, Double>();
-				probability_String = null;
+				value_Int = new HashMap<Integer, Integer>();
+				value_String = null;
 				break;
 			case VARCHAR:
-				probability_String = new HashMap<String, Double>();
-				probability_Int = null;
+				value_String = new HashMap<String, Integer>();
+				value_Int = null;
 				break;
 		}
 	}
 	
-	public void addToProb(String s, int count, int total){
-		probability_String.put(s, (1.0*count)/total);
+	public void addToProb(String s, int count){
+		value_String.put(s, count);
 	}
 	
-	public void addToProb(int val, int count, int total){
-		probability_Int.put(val, (1.0*count)/total);
+	public void addToProb(int val, int count){
+		value_Int.put(val, count);
 	}
 	
 	public double calcEntropy(){
-		Collection<Double> vals = new ArrayList<Double>();
+		Collection<Integer> vals = new ArrayList<Integer>();
 		switch(type){
 			case INT:
-				vals.addAll(probability_Int.values());
+				vals.addAll(value_Int.values());
 				break;
 			case VARCHAR:
-				vals.addAll(probability_String.values());
+				vals.addAll(value_String.values());
 				break;
 		}
 		Double total = 0.0;
-		for(Double prob : vals){
+		for(Integer count : vals){
+			double prob = (1.0*count)/numRows;
 			total += prob*Math.log(prob)/Math.log(2);
 		}
 		return -total;
+	}
+	
+	@Override
+	public boolean equals(Object o){
+		if(o instanceof Column){
+			return ((Column)o).attrName.equals(attrName);
+		}
+		return false;
+	}
+	
+	@Override
+	public int hashCode(){
+		return attrName.hashCode();
 	}
 	
 	@Override
@@ -64,7 +80,7 @@ public class Column{
 		boolean first = true;
 		switch(type){
 			case INT:
-				for(Entry<Integer, Double> e : probability_Int.entrySet()){
+				for(Entry<Integer, Integer> e : value_Int.entrySet()){
 					if(!first)
 						ret += ", ";
 					ret += e.getKey()+": "+e.getValue();
@@ -72,7 +88,7 @@ public class Column{
 				}
 				break;
 			case VARCHAR:
-				for(Entry<String, Double> e : probability_String.entrySet()){
+				for(Entry<String, Integer> e : value_String.entrySet()){
 					if(!first)
 						ret += ", ";
 					ret += e.getKey()+": "+e.getValue();
@@ -84,4 +100,5 @@ public class Column{
 		ret += calcEntropy()+"";
 		return ret;
 	}
+
 }
