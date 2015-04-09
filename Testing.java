@@ -10,7 +10,7 @@ import java.sql.Statement;
 
 public class Testing {
 	public static void main(String args[]) throws SQLException, FileNotFoundException{
-		Cluster.clusterFromQuery("SELECT * ", "FROM min_trim", " ").toString();
+		System.out.println(Cluster.clusterFromQuery("SELECT * ", "FROM min_trim", " ").calcCost());
 		/*Communicator com = new Communicator();
 		com.connect();
 		ResultSet rs = com.query("SELECT paper FROM min_trim");

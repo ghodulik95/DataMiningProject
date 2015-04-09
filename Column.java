@@ -13,7 +13,7 @@ public class Column{
 	public Map<String, Integer> value_String;
 	public Map<Integer, Integer> value_Int;
 	public final String attrName;
-	public final int numRows;
+	public int numRows;
 	
 	public Column(Cell top, int numRows){
 		this.top = top;
