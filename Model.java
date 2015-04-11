@@ -1,16 +1,13 @@
-import java.util.HashMap;
-import java.util.HashSet;
+
 import java.util.List;
-import java.util.Map;
 
 
 public class Model {
 	public List<Cluster> model;
-	public Map<String, Integer> hasCells;
+	public int numCells = 0;
 	
 	public Model(List<Cluster> m){
 		model = m;
-		hasCells = new HashMap<String, Integer>();
 		addAllCells();
 	}
 	
@@ -23,11 +20,10 @@ public class Model {
 	}
 	
 	void addAllCells() {
-		hasCells.clear();
 		for(Cluster c : model){
 			for(Integer rowId : c.cells.keySet()){
 				for(Column a : c.cells.get(rowId).keySet()){
-					hasCells.put(a.attrName, rowId);
+					numCells++;
 				}
 			}
 		}
@@ -39,8 +35,8 @@ public class Model {
 			totalCost += c.calcCost();
 			System.out.println("total : "+totalCost);
 		}
-		int numCells = Cluster.original.numRows * Cluster.original.attributes.size();
-		totalCost += (numCells - hasCells.size())*Cluster.averageCellCost;
+		int totalNumCells = Cluster.original.numRows * Cluster.original.attributes.size();
+		totalCost += (totalNumCells - numCells)*Cluster.averageCellCost;
 		System.out.println("total : "+totalCost);
 		return totalCost;
 	}

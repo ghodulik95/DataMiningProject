@@ -51,6 +51,7 @@ public class ROCAT {
 			first = false;
 			System.out.println("BEST : "+(best == null? "NULL NOW" : best.attributes));
 			subClus.removeCluster(prev);
+			subClus.numCells = 0;
 		}
 		return best;
 		
