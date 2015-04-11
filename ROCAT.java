@@ -21,6 +21,9 @@ public class ROCAT {
 			System.out.println("cur "+curr.numRows);
 			System.out.println("sub "+subClus.model.size());
 			Cluster c = findBestPure(curr, subClus);
+			if(c.numRows <= 1 || c.cells.size() <= 1){
+				continue;
+			}
 			
 			subClus.addCluster(c);
 			subClus.addAllCells();
@@ -101,7 +104,7 @@ public class ROCAT {
 			if(!first && cost < lowestCost){
 				lowestCost = cost;
 				best = prev;
-				//System.out.println("NEW BEST! -- "+best.cells.size() + "   --   "+best.numRows);
+				System.out.println("NEW BEST! -- "+best.cells.size() + "   --   "+best.numRows);
 			}else if(!first){
 				//return best;
 			}
