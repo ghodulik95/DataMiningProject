@@ -7,6 +7,7 @@ import java.util.Map.Entry;
 
 
 
+
 public class Column{
 	public Cell top;
 	public final Cell.Type type;
@@ -23,10 +24,12 @@ public class Column{
 		switch(type){
 			case INT:
 				value_Int = new HashMap<Integer, Integer>();
+				//value_Int.put(top.val_Int, 1);
 				value_String = null;
 				break;
 			case VARCHAR:
 				value_String = new HashMap<String, Integer>();
+				//value_String.put(top.val_String, 1);
 				value_Int = null;
 				break;
 		}
@@ -36,7 +39,7 @@ public class Column{
 		value_String.put(s, count);
 	}
 	
-	public void addToProb(int val, int count){
+	public void addToProb(Integer val, int count){
 		value_Int.put(val, count);
 	}
 	
@@ -99,6 +102,17 @@ public class Column{
 		ret += "} ";
 		ret += calcEntropy()+"";
 		return ret;
+	}
+
+	public void addNull(Cell.Type t, int cnt) {
+		switch(type){
+			case INT:
+				value_Int.put(null, cnt);
+				break;
+			case VARCHAR:
+				value_String.put(null, cnt);
+				break;
+		}
 	}
 
 }

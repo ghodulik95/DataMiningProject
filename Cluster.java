@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 
 
@@ -14,6 +15,8 @@ public class Cluster {
 	public Map<Integer, Map<Column, Cell>> cells;
 	public int numRows;
 	public static int originalNumRows = -1;
+	public static Cluster original;
+	public static double averageCellCost = -1;
 	
 	public Cluster(int n){
 		//rows = new ArrayList<Cell>();
@@ -102,12 +105,20 @@ public class Cluster {
 									int cnt = dist.getInt("cnt");
 									switch(type){
 										case INT:
-											int vali = dist.getInt(columnName);
-											col.addToProb(vali, cnt);
+											Integer vali = dist.getInt(columnName);
+											if(!dist.wasNull()){
+												col.addToProb(vali, cnt);
+											}else{
+												col.addNull(type, cnt);
+											}
 											break;
 										case VARCHAR:
 											String vals = dist.getString(columnName);
-											col.addToProb(vals, cnt);
+											if(!dist.wasNull()){
+												col.addToProb(vals, cnt);
+											}else{
+												col.addNull(type, cnt);
+											}
 											break;
 									}
 								}while(dist.next());
@@ -126,6 +137,8 @@ public class Cluster {
 					}
 				}while(rs.next());
 				rs.close();
+				original = ret;
+				setAverageCellSize();
 				return ret;
 			}
 		}catch(Exception e){
@@ -133,6 +146,13 @@ public class Cluster {
 			return null;
 		}
 		
+	}
+
+	private static void setAverageCellSize() {
+		averageCellCost = 0.0;
+		for(Column a : original.attributes){
+			averageCellCost += a.calcEntropy()/original.attributes.size();
+		}
 	}
 
 	@Override
@@ -181,13 +201,12 @@ public class Cluster {
 	public void printAttr(){
 		for(Column c : attributes){
 			System.out.println(c);
-			return;
 		}
 	}
 	
 	public Cluster addAttr(Cluster m, Column a, List<Integer> rowIds){
 		Cluster ret = new Cluster(rowIds.size());
-		for(Integer rowId : cells.keySet()){
+		for(Integer rowId : rowIds){
 			Map<Column, Cell> cell = new HashMap<Column, Cell>();
 			for(Column c : attributes){
 				cell.put(c, cells.get(rowId).get(c));
@@ -200,10 +219,14 @@ public class Cluster {
 	}
 
 	private void setAttributes() {
+		attributes = new ArrayList<Column>();
 		for(Integer rowId : cells.keySet()){
 			for(Entry<Column, Cell> e : cells.get(rowId).entrySet()){
 				Column col = e.getKey();
 				Cell cur = e.getValue();
+				if(!attributes.contains(col)){
+					attributes.add(new Column(cur, 0));
+				}
 				int ind = -1;
 				if( (ind = attributes.indexOf(col)) != -1){
 					Column a = attributes.get(ind);
@@ -225,32 +248,32 @@ public class Cluster {
 							break;
 					}
 				}else{
-					attributes.add(new Column(cur, 0));
+					System.err.println("No column");
 				}
 			}
 		}
 	}
-
-	public static Cluster makeBiggest(Cluster m, Cluster cluster, Column a) {
+	
+	public static List<Integer> findMostCommonValueRows(Cluster m, Column a, Set<Integer> potentialRows){
 		int freq = Integer.MIN_VALUE;
 		Cell cur;
 		List<Integer> rowIds = new ArrayList<Integer>();
 		switch(a.type){
 			case INT:
-				int mostCommon = -99999;
+				Integer mostCommon = -99999;
 				for(Entry<Integer, Integer> e : a.value_Int.entrySet()){
 					if( e.getValue() > freq){
 						freq = e.getValue();
 						mostCommon = e.getKey();
 					}
 				}
-				for(Integer rowId : cluster.cells.keySet()){
+				for(Integer rowId : potentialRows){
 					cur = m.cells.get(rowId).get(a);
 					if(cur.val_Int == mostCommon){
 						rowIds.add(rowId);
 					}
 				}
-				return cluster.addAttr(m, a, rowIds);
+				break;
 			case VARCHAR:
 				String mostCommonS = "";
 				for(Entry<String, Integer> e : a.value_String.entrySet()){
@@ -259,15 +282,22 @@ public class Cluster {
 						mostCommonS = e.getKey();
 					}
 				}
-				for(Integer rowId : cluster.cells.keySet()){
+				for(Integer rowId : potentialRows){
 					cur = m.cells.get(rowId).get(a);
-					if(cur.val_String.equals(mostCommonS)){
+					if((cur.val_String == null && mostCommonS == null) || (cur.val_String != null && cur.val_String.equals(mostCommonS))){
 						rowIds.add(rowId);
 					}
 				}
-				return cluster.addAttr(m, a, rowIds);
+				break;
+			
 		}
-		return null;
+		return rowIds;
+	}
+
+	public static Cluster makeBiggest(Cluster m, Cluster cluster, Column a) {
+		List<Integer> rowIds = findMostCommonValueRows(m, a, cluster.cells.keySet());
+		System.out.println("Row size "+rowIds.size());
+		return cluster.addAttr(m, a, rowIds);
 	}
 	
 	public double calcCost(){
@@ -288,10 +318,80 @@ public class Cluster {
 		if(probInThis > 0.0)
 			objAssignmentCost += -originalNumRows*probInThis*Math.log(probInThis)/Math.log(2);
 		if(probInThis < 1.0)
-			objAssignmentCost *= -originalNumRows*(1 - probInThis)*Math.log(1 - probInThis)/Math.log(2);
+			objAssignmentCost += -originalNumRows*(1 - probInThis)*Math.log(1 - probInThis)/Math.log(2);
 
 		double attrAssignmentCost = 0.5*numParams*Math.log(numRows)/Math.log(2);
 		
 		return codingCost + objAssignmentCost + attrAssignmentCost;
+	}
+	
+	public Cluster getComplement(){
+		if(attributes.size() == original.attributes.size()){
+			return null;
+		}
+		Cluster ret = new Cluster(this.numRows);
+		ArrayList<Column> cols = new ArrayList<Column>();
+		cols.addAll(original.attributes);
+		for(Column a : attributes){
+			cols.remove(a);
+		}
+		for(Integer rowId : cells.keySet()){
+			Map<Column, Cell> row = new HashMap<Column, Cell>();
+			for(Column a : cols){
+				row.put(a, original.cells.get(rowId).get(a));
+			}
+			ret.cells.put(rowId, row);
+		}
+		ret.setAttributes();
+		return ret;
+	}
+
+	public static Cluster cutPureAttr(Cluster m, Column a) {
+		List<Integer> rowIds = findMostCommonValueRows(m, a, m.cells.keySet());
+		Cluster ret = new Cluster(rowIds.size());
+		Map<Column, Cell> r = new HashMap<Column, Cell>();
+		for(Integer row : rowIds){
+			Cell cur = m.cells.get(row).get(a);
+			/*if(!ret.attributes.contains(a)){
+				ret.attributes.add(new Column( cur, rowIds.size()));
+			}else{
+				Column attr = ret.attributes.get(ret.attributes.indexOf(a));
+				switch(cur.type){
+					case INT:
+						if(attr.value_Int.containsKey(cur.val_Int)){
+							attr.value_Int.put(cur.val_Int, attr.value_Int.get(cur.val_Int) + 1);
+						}else{
+							attr.value_Int.put(cur.val_Int, 1);
+						}
+						break;
+					case VARCHAR:
+						if(attr.value_String.containsKey(cur.val_String)){
+							attr.value_String.put(cur.val_String, attr.value_String.get(cur.val_String) + 1);
+						}else{
+							attr.value_String.put(cur.val_String, 1);
+						}
+						break;
+				}
+			}*/
+			r.put(a, cur);
+			ret.cells.put(row, r);
+			r = new HashMap<Column, Cell>();
+		}
+		ret.setAttributes();
+		return ret;
+	}
+	
+	public void printCells(){
+		for(Integer rowId : cells.keySet()){
+			if(cells.get(rowId).size() < 3){
+				System.err.println("Not 3");
+				return;
+			}
+			System.out.print("Row "+rowId+": ");
+			for(Entry<Column, Cell> e : cells.get(rowId).entrySet()){
+				System.out.print("("+e.getKey()+", "+e.getValue()+")");
+			}
+			System.out.println();
+		}
 	}
 }
