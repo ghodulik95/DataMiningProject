@@ -15,11 +15,12 @@ public class Model {
 		model.add(c);
 	}
 	
-	public void removeCluster(Cluster c){
-		model.remove(c);
+	public void removeCluster(){
+		model.remove(0);
 	}
 	
 	void addAllCells() {
+		numCells = 0;
 		for(Cluster c : model){
 			for(Integer rowId : c.cells.keySet()){
 				for(Column a : c.cells.get(rowId).keySet()){
