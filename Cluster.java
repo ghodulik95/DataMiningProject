@@ -17,12 +17,19 @@ public class Cluster {
 	public static int originalNumRows = -1;
 	public static Cluster original;
 	public static double averageCellCost = -1;
+	public static double originalCost;
 	
 	public Cluster(int n){
 		//rows = new ArrayList<Cell>();
 		attributes = new ArrayList<Column>();
 		cells = new HashMap<Integer, Map<Column, Cell>>();
 		numRows = n;
+	}
+	
+	public Cluster(){
+		attributes = new ArrayList<Column>();
+		cells = new HashMap<Integer, Map<Column, Cell>>();
+		numRows = 0;
 	}
 	
 	public static Cluster clusterFromQuery(String select, String from, String where){
@@ -150,9 +157,13 @@ public class Cluster {
 
 	private static void setAverageCellSize() {
 		averageCellCost = 0.0;
+		double totalCost = 0.0;
 		for(Column a : original.attributes){
-			averageCellCost += a.calcEntropy()/original.attributes.size();
+			double ent = a.calcEntropy();
+			totalCost += ent;
+			averageCellCost += ent/original.attributes.size();
 		}
+		originalCost = totalCost*original.attributes.size();
 	}
 
 	@Override
@@ -218,7 +229,7 @@ public class Cluster {
 		return ret;
 	}
 
-	private void setAttributes() {
+	protected void setAttributes() {
 		attributes = new ArrayList<Column>();
 		for(Integer rowId : cells.keySet()){
 			for(Entry<Column, Cell> e : cells.get(rowId).entrySet()){
@@ -296,7 +307,7 @@ public class Cluster {
 
 	public static Cluster makeBiggest(Cluster m, Cluster cluster, Column a) {
 		List<Integer> rowIds = findMostCommonValueRows(m, a, cluster.cells.keySet());
-		System.out.println("Row size "+rowIds.size());
+		//System.out.println("Row size "+rowIds.size());
 		return cluster.addAttr(m, a, rowIds);
 	}
 	
@@ -312,7 +323,6 @@ public class Cluster {
 			}
 		}
 		codingCost = codingCost*numRows;
-		
 		double probInThis = (1.0*numRows)/originalNumRows;
 		double objAssignmentCost = 0.0;
 		if(probInThis > 0.0)
@@ -321,17 +331,18 @@ public class Cluster {
 			objAssignmentCost += -originalNumRows*(1 - probInThis)*Math.log(1 - probInThis)/Math.log(2);
 
 		double attrAssignmentCost = 0.5*numParams*Math.log(numRows)/Math.log(2);
-		
+		//System.out.println("CC "+numRows);
+		//System.out.println("AT "+attrAssignmentCost);
 		return codingCost + objAssignmentCost + attrAssignmentCost;
 	}
 	
-	public Cluster getComplement(){
+	public Cluster getComplement(Cluster bound){
 		if(attributes.size() == original.attributes.size()){
 			return null;
 		}
 		Cluster ret = new Cluster(this.numRows);
 		ArrayList<Column> cols = new ArrayList<Column>();
-		cols.addAll(original.attributes);
+		cols.addAll(bound.attributes);
 		for(Column a : attributes){
 			cols.remove(a);
 		}
@@ -343,6 +354,7 @@ public class Cluster {
 			ret.cells.put(rowId, row);
 		}
 		ret.setAttributes();
+		//ret.printAttr();
 		return ret;
 	}
 

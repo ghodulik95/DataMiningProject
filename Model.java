@@ -32,13 +32,19 @@ public class Model {
 
 	public double calcCost(){
 		double totalCost = 0.0;
+		int i = 0;
 		for(Cluster c : model){
 			totalCost += c.calcCost();
-			System.out.println("total : "+totalCost);
+			//c.printAttr();
+			//System.out.println("total"+(++i)+" :"+c.cells.size());
 		}
-		int totalNumCells = Cluster.original.numRows * Cluster.original.attributes.size();
-		totalCost += (totalNumCells - numCells)*Cluster.averageCellCost;
-		System.out.println("total : "+totalCost);
+		/*int totalNumCells = Cluster.original.numRows * Cluster.original.attributes.size();
+		totalCost += (totalNumCells - numCells)*Cluster.averageCellCost;*/
+		//System.out.println("total2 : "+totalCost);
+		//2076808.422228242
+		totalCost += (new NonClusterSpace(this)).calcCost();
+		//System.out.println("done");
+		//2062018.7929820728
 		return totalCost;
 	}
 }

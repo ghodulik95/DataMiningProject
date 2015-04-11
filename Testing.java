@@ -7,14 +7,18 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.LinkedList;
+import java.util.List;
 
 
 public class Testing {
 	public static void main(String args[]) throws SQLException, FileNotFoundException{
-		Model m = new Model(new LinkedList<Cluster>());
 		Cluster c = Cluster.clusterFromQuery("SELECT * ", "FROM trim2", " ");
-		Cluster p = ROCAT.findBestPure(c, m);
-		p.printAttr();
+		List<Cluster> r = ROCAT.rocat(c);
+		int i = 1;
+		for(Cluster clus : r){
+			System.out.println("Cluster "+(i++));
+			clus.printAttr();
+		}
 		//p.printCells();
 		/*Communicator com = new Communicator();
 		com.connect();
