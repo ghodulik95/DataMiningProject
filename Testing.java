@@ -12,12 +12,11 @@ import java.util.List;
 
 public class Testing {
 	public static void main(String args[]) throws SQLException, FileNotFoundException{
-		Cluster c = Cluster.clusterFromQuery("SELECT * ", "FROM trim2", " ");
+		Cluster c = Cluster.clusterFromQuery("SELECT * ", "FROM trim3", " ");
 		List<Cluster> r = ROCAT.rocat(c);
 		int i = 1;
 		for(Cluster clus : r){
-			System.out.println("Cluster "+(i++));
-			clus.printAttr();
+			System.out.println("Cluster "+(i++)+": "+clus.attributes);
 		}
 		//p.printCells();
 		/*Communicator com = new Communicator();
@@ -31,5 +30,19 @@ public class Testing {
 		PrintWriter out = new PrintWriter("paper.txt");
 		out.println(r);
 		out.close();*/
+		/*Communicator com = new Communicator();
+		com.connect();
+		ResultSet rs = com.query("SELECT column_name FROM INFORMATION_SCHEMA.COLUMNS  WHERE table_name = 'trim2'  ORDER BY ordinal_position");
+		while(rs.next()){
+			String col = rs.getString(1);
+			ResultSet r = com.query("Select "+col+", COUNT(*)/4952 as prob from trim2 group by "+col +" order by prob desc");
+			r.next();
+			double pr = r.getDouble("prob");
+			if(pr > 0.9){
+				System.out.println("DROP COLUMN "+col+",");
+			}
+			r.close();
+		}
+		rs.close();*/
 	}
 }

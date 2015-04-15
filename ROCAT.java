@@ -1,43 +1,76 @@
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Stack;
 import java.util.Map.Entry;
 import java.util.PriorityQueue;
+
 
 
 public class ROCAT {
 	
 	public static List<Cluster> rocat(Cluster d){
-		double cost = getOriginalCost(d);
-		System.out.println("Orig cost "+cost);
-		Model subClus = new Model(new ArrayList<Cluster>());
-		LinkedList<Cluster> queue = new LinkedList<Cluster>();
-		queue.push(d);
-		while(!queue.isEmpty()){
-			Cluster curr = queue.pop();
-			System.out.println("cur "+curr.numRows);
-			System.out.println("sub "+subClus.model.size());
-			Cluster c = findBestPure(curr, subClus);
-			if(c.numRows <= 1 || c.cells.size() <= 1){
-				continue;
+		File outputDir = new File("saves");
+        outputDir.mkdirs();
+
+        File outputFile = new File(outputDir, "plan.txt");
+
+        PrintWriter outputWriter = null;
+        try {
+            outputFile.createNewFile();
+
+            outputWriter = new PrintWriter(outputFile.getAbsolutePath());
+		
+		
+			double cost = Double.POSITIVE_INFINITY;//d.calcCost();//getOriginalCost(d);
+			System.out.println("Orig cost "+cost);
+			Model subClus = new Model(new ArrayList<Cluster>());
+			LinkedList<Cluster> queue = new LinkedList<Cluster>();
+			queue.push(d);
+			while(!queue.isEmpty()){
+				Cluster curr = queue.pop();
+				System.out.println("current subspace # rows: "+curr.numRows);
+				System.out.println("Number of relevant clusters: "+subClus.model.size());
+				Cluster c = findBestPure(curr, subClus, outputWriter);
+				if(c == null || c.numRows <= 1 || c.cells.size() <= 1){
+					continue;
+				}
+				
+				subClus.addCluster(c);
+				subClus.addAllCells();
+				double curCost = subClus.calcCost();
+				//System.out.println("New cost "+curCost);
+				if(curCost < cost){
+					System.out.println("ADDED: "+c.attributes);
+					cost = curCost;
+					queue.addAll(splitSpace(curr, c));
+				}else{
+					System.out.println("DID NOT ADD: "+c.attributes);
+					subClus.removeCluster();
+				}
+				
 			}
 			
-			subClus.addCluster(c);
-			subClus.addAllCells();
-			double curCost = subClus.calcCost();
-			System.out.println("New cost "+curCost);
-			if(curCost < cost){
-				cost = curCost;
-				queue.addAll(splitSpace(curr, c));
-			}else{
-				subClus.removeCluster();
-			}
-			
-		}
-		return subClus.model;
+			return subClus.model;
+		
+        //to here
+	    } catch (FileNotFoundException e) {
+	        e.printStackTrace();
+	    } catch (IOException e) {
+	        e.printStackTrace();
+	    } finally {
+	        if (outputWriter != null)
+	            outputWriter.close();
+	    }
+		
+		return null;
 	}
 	
 	private static double getOriginalCost(Cluster d) {
@@ -65,55 +98,60 @@ public class ROCAT {
 		return ret;
 	}
 
-	public static Cluster findBestPure(Cluster m, Model subClus){
-		//List<Cluster> pure = new ArrayList<Cluster>();
-		PriorityQueue<Column> attr = new PriorityQueue<Column>(new EntropyComparator());
-		attr.addAll(m.attributes);
-		List<Column> attrPrime = new ArrayList<Column>();
-		double lowestCost = Double.POSITIVE_INFINITY;
-		Cluster best = null;
-		Cluster prev = null;
-		boolean first = true;
-		while(!attr.isEmpty()){
-			//Get a with min entropy
-			Column a = attr.poll();
-			//System.out.println("Got column "+a);
-			if(prev == null){
-				prev = Cluster.cutPureAttr(m, a);
-				//pure.add(t);
-			}else{
-				prev = Cluster.makeBiggest(m, prev, a);
-				//pure.add(t);
-			}
-			
-			if(prev.numRows <= 1  || prev.cells.size() <= 1){
-				return best;
-			}
-			System.out.println(prev.numRows);
-			attrPrime.add(a);
-			
-			subClus.addCluster(prev);
-			subClus.addAllCells();
-			double cost = subClus.calcCost();
-			//System.out.println("Cost is "+cost);
-			
-			if(Double.isNaN(cost)){
-				return best;
-			}
-			
-			if(!first && cost < lowestCost){
-				lowestCost = cost;
-				best = prev;
-				System.out.println("NEW BEST! -- "+best.cells.size() + "   --   "+best.numRows);
-			}else if(!first){
-				//return best;
-			}
+	public static Cluster findBestPure(Cluster m, Model subClus, PrintWriter outputWriter){
+	
+            //here
+            //List<Cluster> pure = new ArrayList<Cluster>();
+    		PriorityQueue<Column> attr = new PriorityQueue<Column>(new EntropyComparator());
+    		attr.addAll(m.attributes);
+    		List<Column> attrPrime = new ArrayList<Column>();
+    		double lowestCost = Double.POSITIVE_INFINITY;
+    		Cluster best = null;
+    		Cluster prev = null;
+    		boolean first = true;
+    		while(!attr.isEmpty()){
+    			//Get a with min entropy
+    			Column a = attr.poll();
+    			System.out.println("Got column "+a);
+    			if(prev == null){
+    				prev = Cluster.cutPureAttr(m, a);
+    				//pure.add(t);
+    			}else{
+    				prev = Cluster.makeBiggest(m, prev, a);
+    				//pure.add(t);
+    			}
+    			
+    			if(prev.numRows <= 1  || prev.cells.size() <= 1){
+    				return best;
+    			}
+    			attrPrime.add(a);
+    			//System.out.println(prev.numRows + " - "+prev.attributes);
+    			//outputWriter.println(prev.numRows+" - "+prev.attributes);
+    			
+    			
+    			subClus.addCluster(prev);
+    			subClus.addAllCells();
+    			double cost = subClus.calcCost();
+    			System.out.println(cost);
+    			
+    			if(Double.isNaN(cost)){
+    				return best;
+    			}
+    			
+    			if(/*!first && */cost < lowestCost){
+    				lowestCost = cost;
+    				best = prev;
+    				System.out.println("NEW BEST! -- "+best.cells.size() + "   --   "+best.numRows);
+    	            //outputWriter.println("NEW BEST! -- "+best.cells.size() + "   --   "+best.numRows);
+    			}else if(!first){
+    				//return best;
+    			}
 
-			first = false;
-			//System.out.println("BEST : "+(best == null? "NULL NOW" : best.attributes));
-			subClus.removeCluster();
-		}
-		return best;
-		
+    			first = false;
+    			//System.out.println("BEST : "+(best == null? "NULL NOW" : best.attributes));
+    			subClus.removeCluster();
+    		}
+    		return best;
+				
 	}
 }

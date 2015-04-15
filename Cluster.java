@@ -18,6 +18,7 @@ public class Cluster {
 	public static Cluster original;
 	public static double averageCellCost = -1;
 	public static double originalCost;
+	public static double originalNumAttr;
 	
 	public Cluster(int n){
 		//rows = new ArrayList<Cell>();
@@ -146,6 +147,7 @@ public class Cluster {
 				rs.close();
 				original = ret;
 				setAverageCellSize();
+				originalNumAttr = original.attributes.size();
 				return ret;
 			}
 		}catch(Exception e){
@@ -329,11 +331,20 @@ public class Cluster {
 			objAssignmentCost += -originalNumRows*probInThis*Math.log(probInThis)/Math.log(2);
 		if(probInThis < 1.0)
 			objAssignmentCost += -originalNumRows*(1 - probInThis)*Math.log(1 - probInThis)/Math.log(2);
+		
+		double attrAssignmentCost = 0.0;
+		probInThis = (1.0*attributes.size())/originalNumAttr;
+		if(probInThis > 0.0)
+			attrAssignmentCost += -originalNumAttr*probInThis*Math.log(probInThis)/Math.log(2);
+		if(probInThis < 1.0)
+			attrAssignmentCost += -originalNumAttr*(1 - probInThis)*Math.log(1 - probInThis)/Math.log(2);
 
-		double attrAssignmentCost = 0.5*numParams*Math.log(numRows)/Math.log(2);
-		//System.out.println("CC "+numRows);
-		//System.out.println("AT "+attrAssignmentCost);
-		return codingCost + objAssignmentCost + attrAssignmentCost;
+		double probabilities = 0.5*numParams*Math.log(numRows)/Math.log(2);
+		/*System.out.println("CC "+codingCost);
+		System.out.println("AT "+attrAssignmentCost);
+		System.out.println("PR "+probabilities);
+		System.out.println("OB "+objAssignmentCost);*/
+		return codingCost + objAssignmentCost + attrAssignmentCost + probabilities;
 	}
 	
 	public Cluster getComplement(Cluster bound){

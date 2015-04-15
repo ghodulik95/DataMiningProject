@@ -16,7 +16,7 @@ public class Model {
 	}
 	
 	public void removeCluster(){
-		model.remove(0);
+		model.remove(model.size() - 1);
 	}
 	
 	void addAllCells() {
@@ -34,15 +34,18 @@ public class Model {
 		double totalCost = 0.0;
 		int i = 0;
 		for(Cluster c : model){
-			totalCost += c.calcCost();
+			double cost = c.calcCost();
+			totalCost += cost;
 			//c.printAttr();
-			//System.out.println("total"+(++i)+" :"+c.cells.size());
+			//System.out.println("cost"+(++i)+" :"+cost);
 		}
 		/*int totalNumCells = Cluster.original.numRows * Cluster.original.attributes.size();
 		totalCost += (totalNumCells - numCells)*Cluster.averageCellCost;*/
 		//System.out.println("total2 : "+totalCost);
 		//2076808.422228242
-		totalCost += (new NonClusterSpace(this)).calcCost();
+		double nonCluster = (new NonClusterSpace(this)).calcCost();
+		//System.out.println("S: "+nonCluster);
+		totalCost += nonCluster;
 		//System.out.println("done");
 		//2062018.7929820728
 		return totalCost;
