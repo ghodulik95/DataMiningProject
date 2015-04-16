@@ -61,6 +61,15 @@ public class Column{
 		return -total;
 	}
 	
+	public static double calcEntropy(Collection<Integer> vals, int totalNumRows){
+		Double total = 0.0;
+		for(Integer count : vals){
+			double prob = (1.0*count)/totalNumRows;
+			total += prob*Math.log(prob)/Math.log(2);
+		}
+		return -total;
+	}
+	
 	@Override
 	public boolean equals(Object o){
 		if(o instanceof Column){

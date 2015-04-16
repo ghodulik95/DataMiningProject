@@ -1,6 +1,7 @@
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -148,6 +149,22 @@ public class Cluster {
 				original = ret;
 				setAverageCellSize();
 				originalNumAttr = original.attributes.size();
+				/*for(Column col : ret.attributes){
+
+					int count = 0;
+					if(col.type == Cell.Type.INT){
+						for(Integer in : col.value_Int.values()){
+							count += in;
+						}
+					}else{
+						for(Integer in : col.value_String.values()){
+							count += in;
+						}
+					}
+					if(count != 4952){
+						System.out.println(col.attrName);
+					}
+				}*/
 				return ret;
 			}
 		}catch(Exception e){
@@ -265,6 +282,36 @@ public class Cluster {
 				}
 			}
 		}
+	}
+	
+	public static Collection<Integer> findValueDistribution(Cluster m, Column a, Set<Integer> potentialRows){
+		Cell cur;
+		switch(a.type){
+			case INT:
+				Map<Integer, Integer> valDistInt = new HashMap<Integer, Integer>();
+				for(Integer rowId : potentialRows){
+					cur = m.cells.get(rowId).get(a);
+					if(valDistInt.containsKey(cur.val_Int)){
+						valDistInt.put(cur.val_Int, valDistInt.get(cur.val_Int) + 1);
+					}else{
+						valDistInt.put(cur.val_Int, 1);
+					}
+				}
+				return valDistInt.values();
+			case VARCHAR:
+				Map<String, Integer> valDistStr = new HashMap<String, Integer>();
+				for(Integer rowId : potentialRows){
+					cur = m.cells.get(rowId).get(a);
+					if(valDistStr.containsKey(cur.val_String)){
+						valDistStr.put(cur.val_String, valDistStr.get(cur.val_String) + 1);
+					}else{
+						valDistStr.put(cur.val_String, 1);
+					}
+				}
+				return valDistStr.values();
+			
+		}
+		return null;
 	}
 	
 	public static List<Integer> findMostCommonValueRows(Cluster m, Column a, Set<Integer> potentialRows){

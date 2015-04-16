@@ -5,6 +5,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -111,7 +112,13 @@ public class ROCAT {
     		boolean first = true;
     		while(!attr.isEmpty()){
     			//Get a with min entropy
-    			Column a = attr.poll();
+    			Column a;
+    			if(prev == null){
+    				a = attr.poll();
+    			}else{
+    				a = getBestColumn(m, prev, attr.iterator());
+    				attr.remove(a);
+    			}
     			System.out.println("Got column "+a);
     			if(prev == null){
     				prev = Cluster.cutPureAttr(m, a);
@@ -153,5 +160,20 @@ public class ROCAT {
     		}
     		return best;
 				
+	}
+
+	private static Column getBestColumn(Cluster m, Cluster prev, Iterator<Column> iterator) {
+		double lowestEntropy = Double.POSITIVE_INFINITY;
+		Column bestCol = null;
+		while(iterator.hasNext()){
+			Column a = iterator.next();
+			Collection<Integer> valDist = Cluster.findValueDistribution(m, a, prev.cells.keySet());
+			double entropy = Column.calcEntropy(valDist, prev.numRows);
+			if(entropy < lowestEntropy){
+				lowestEntropy = entropy;
+				bestCol = a;
+			}
+		}
+		return bestCol;
 	}
 }
