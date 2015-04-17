@@ -1,4 +1,6 @@
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -16,9 +18,29 @@ public class Testing {
 						 " FROM trim3 ", " ");
 		List<Cluster> r = ROCAT.rocat(c);
 		int i = 1;
-		for(Cluster clus : r){
-			System.out.println("Cluster "+(i++)+": "+clus.attributes);
-		}
+		File outputDir = new File("saves");
+        outputDir.mkdirs();
+
+        File outputFile = new File(outputDir, "Optimized1SearchPhaseResults_tryConv.txt");
+
+        PrintWriter outputWriter = null;
+        try {
+            outputFile.createNewFile();
+
+            outputWriter = new PrintWriter(outputFile.getAbsolutePath());
+
+    		for(Cluster clus : r){
+    			outputWriter.println("Cluster "+(i++)+": "+clus.attributes);
+    		}
+            
+        } catch (FileNotFoundException e) {
+	        e.printStackTrace();
+	    } catch (IOException e) {
+	        e.printStackTrace();
+	    } finally {
+	        if (outputWriter != null)
+	            outputWriter.close();
+	    }
 		//p.printCells();
 		/*Communicator com = new Communicator();
 		com.connect();

@@ -135,7 +135,7 @@ public class Column implements Serializable{
 			}else if(num != null){
 				value_Int.remove(cell.val_Int);
 			}else{
-				System.err.println("Uh OHHHHH!");
+				//System.err.println("Uh OHHHHH!");
 			}
 			numRows--;
 			break;
@@ -146,7 +146,7 @@ public class Column implements Serializable{
 			}else if(num != null){
 				value_String.remove(cell.val_String);
 			}else{
-				System.err.println("Uh OHHHHH!");
+				//System.err.println("Uh OHHHHH!");
 			}
 			numRows--;
 			break;

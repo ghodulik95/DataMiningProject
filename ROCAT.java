@@ -31,7 +31,7 @@ public class ROCAT {
 		File outputDir = new File("saves");
         outputDir.mkdirs();
 
-        File outputFile = new File(outputDir, "plan.txt");
+        File outputFile = new File(outputDir, "Convergence.txt");
 
         PrintWriter outputWriter = null;
         try {
@@ -52,7 +52,7 @@ public class ROCAT {
 				System.out.println("Number of relevant clusters: "+subClus.model.size());
 				System.out.println("Length of queue: "+queue.size());
 				Cluster c = findBestPure(curr, subClus, outputWriter);
-				if(c == null || c.numRows <= 1 || c.cells.size() <= 1){
+				if(c == null || c.numRows <= 0 || c.cells.size() <= 0){
 					continue;
 				}
 				
@@ -75,9 +75,9 @@ public class ROCAT {
 				}
 				
 			}
-			/*Serializer serial = new Serializer();
+			Serializer serial = new Serializer();
 			serial.serializeClusters(subClus.model);
-			subClus.model = serial.deserializeClusters();*/
+			subClus.model = serial.deserializeClusters();
 			
 			List<pairOfClusters> overlaps = new ArrayList<pairOfClusters>();
 			for(int i = 0; i < subClus.model.size(); i++){
@@ -103,10 +103,10 @@ public class ROCAT {
 							double curCost = subClus.calcCost();
 							if(curCost < cost){
 								cost = curCost;
-								System.out.println("A cluster changed");
+								outputWriter.println("A cluster changed: "+c.attributes);
 								changed = true;
 							}else{
-								c.cells.put(row.getKey(), row.getValue());
+								c.addRow(row);
 								subClus.addRow(row);
 							}
 						}else{
@@ -116,7 +116,7 @@ public class ROCAT {
 								double curCost = subClus.calcCost();
 								if(curCost < cost){
 									cost = curCost;
-									System.out.println("A cluster changed");
+									outputWriter.println("A cluster changed"+c.attributes);
 									changed = true;
 								}else{
 									c.removeRow(row.getKey());
