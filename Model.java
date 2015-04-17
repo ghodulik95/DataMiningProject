@@ -1,5 +1,8 @@
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 
 public class Model {
@@ -53,5 +56,54 @@ public class Model {
 		//System.out.println("done");
 		//2062018.7929820728
 		return totalCost;
+	}
+
+	public void removeRow(Entry<Integer, Map<Column, Cell>> row) {
+		Map<Column, Cell> nsRow = ns.cells.get(row.getKey());
+		if(nsRow !=null){
+			nsRow.putAll(row.getValue());
+		}else{
+			nsRow = new HashMap<Column, Cell>();
+			nsRow.putAll(row.getValue());
+			ns.cells.put(row.getKey(), nsRow);
+			for(Cell cell : nsRow.values()){
+				ns.addToAttributes(cell);
+			}
+		}
+	}
+
+	public void addRow(Entry<Integer, Map<Column, Cell>> row) {
+		Map<Column, Cell> nsRow = ns.cells.get(row.getKey());
+		for(Entry<Column, Cell> rowVals : row.getValue().entrySet()){
+			nsRow.remove(rowVals.getKey());
+			ns.removeFromAttributes(rowVals.getValue());
+		}
+	}
+
+	public void addCells(List<Cell> notAddedToClus) {
+		for(Cell cell : notAddedToClus){
+			Map<Column, Cell> nsRow = ns.cells.get(cell.rowId);
+			if(nsRow != null){
+				nsRow.remove(new Column(cell, 1));
+				if(nsRow.isEmpty()){
+					ns.cells.remove(cell.rowId);
+				}
+				ns.removeFromAttributes(cell);
+			}
+		}
+	}
+
+	public void removeCells(List<Cell> addedToClus) {
+		for(Cell cell : addedToClus){
+			Map<Column, Cell> nsRow = ns.cells.get(cell.rowId);
+			if(nsRow != null){
+				nsRow.put(new Column(cell,1), cell);
+			}else{
+				nsRow = new HashMap<Column, Cell>();
+				nsRow.put(new Column(cell,1), cell);
+				ns.cells.put(cell.rowId, nsRow);
+			}
+			ns.addToAttributes(cell);
+		}
 	}
 }

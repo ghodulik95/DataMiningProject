@@ -465,4 +465,61 @@ public class Cluster implements Serializable{
 			System.out.println();
 		}
 	}
+
+	public List<Cell> addRow(Entry<Integer, Map<Column, Cell>> row) {
+		for(Column col : attributes){
+			Cell inRow = row.getValue().get(col);
+			switch(col.type){
+			case INT:
+				if(null == col.value_Int.get(inRow.val_Int)){
+					return null;
+				}
+				break;
+			case VARCHAR:
+				if(null == col.value_String.get(inRow.val_String)){
+					return null;
+				}
+				break;
+			}
+		}
+		Map<Column,Cell> newRow = new HashMap<Column,Cell>();
+		cells.put(row.getKey(), newRow);
+		List<Cell> toReturn = new ArrayList<Cell>();
+		for(Entry<Column,Cell> e : row.getValue().entrySet()){
+			if(attributes.contains(e.getKey())){
+				newRow.put(e.getKey(), e.getValue());
+				addToAttributes(e.getValue());
+				toReturn.add(e.getValue());
+			}
+		}
+		return toReturn;
+	}
+
+	public void removeRow(Integer key) {
+		for(Cell cell : cells.get(key).values()){
+			removeFromAttributes(cell);
+		}
+		cells.remove(key);
+	}
+	
+	
+	void addToAttributes(Cell cell) {
+		for(Column c : this.attributes){
+			if(c.attrName.equals(cell.colName)){
+				c.addCell(cell);
+				break;
+			}
+		}
+	}
+	
+
+	void removeFromAttributes(Cell cell) {
+		for(Column c : this.attributes){
+			if(c.attrName.equals(cell.colName)){
+				c.removeCell(cell);
+				break;
+			}
+		}
+	}
+
 }

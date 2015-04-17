@@ -9,6 +9,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
 import java.util.Map.Entry;
 import java.util.PriorityQueue;
@@ -74,15 +75,55 @@ public class ROCAT {
 				}
 				
 			}
-			Serializer serial = new Serializer();
+			/*Serializer serial = new Serializer();
 			serial.serializeClusters(subClus.model);
-			subClus.model = serial.deserializeClusters();
+			subClus.model = serial.deserializeClusters();*/
 			
 			List<pairOfClusters> overlaps = new ArrayList<pairOfClusters>();
 			for(int i = 0; i < subClus.model.size(); i++){
 				for(int j = i+1; j < subClus.model.size(); j++){
 					if(overlapping(subClus.model.get(i), subClus.model.get(j))){
 						overlaps.add(new pairOfClusters(subClus.model.get(i), subClus.model.get(j)));
+					}
+				}
+			}
+			System.out.println(overlaps.size()+" clusters overlap");
+			if(!overlaps.isEmpty()){
+				//Combining phase
+			}
+			
+			boolean changed = true;
+			while(changed){
+				changed = false;
+				for(Cluster c : subClus.model){
+					for(Entry<Integer, Map<Column, Cell>> row : Cluster.original.cells.entrySet()){
+						if(c.cells.containsKey(row.getKey())){
+							c.removeRow(row.getKey());
+							subClus.removeRow(row);
+							double curCost = subClus.calcCost();
+							if(curCost < cost){
+								cost = curCost;
+								System.out.println("A cluster changed");
+								changed = true;
+							}else{
+								c.cells.put(row.getKey(), row.getValue());
+								subClus.addRow(row);
+							}
+						}else{
+							List<Cell> addedToClus = c.addRow(row);
+							if(addedToClus != null){
+								subClus.addCells(addedToClus);
+								double curCost = subClus.calcCost();
+								if(curCost < cost){
+									cost = curCost;
+									System.out.println("A cluster changed");
+									changed = true;
+								}else{
+									c.removeRow(row.getKey());
+									subClus.removeCells(addedToClus);
+								}
+							}
+						}
 					}
 				}
 			}
@@ -173,7 +214,7 @@ public class ROCAT {
             //List<Cluster> pure = new ArrayList<Cluster>();
     		PriorityQueue<Column> attr = new PriorityQueue<Column>(new EntropyComparator());
     		attr.addAll(m.attributes);
-    		List<Column> attrPrime = new ArrayList<Column>();
+    		//List<Column> attrPrime = new ArrayList<Column>();
     		double lowestCost = Double.POSITIVE_INFINITY;
     		Cluster best = null;
     		Cluster prev = null;
@@ -196,11 +237,11 @@ public class ROCAT {
     				//pure.add(t);
     			}
     			
-    			if(prev.numRows <= 25  || prev.cells.size() <= 25){
+    			if(prev.numRows <= 1  || prev.cells.size() <= 1){
     				return best;
     			}
-    			attrPrime.add(a);
-    			//System.out.println(prev.numRows + " - "+prev.attributes);
+    			//attrPrime.add(a);
+    			System.out.println(prev.numRows + " - "+prev.attributes);
     			//outputWriter.println(prev.numRows+" - "+prev.attributes);
     			
     			

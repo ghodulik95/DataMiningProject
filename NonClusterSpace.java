@@ -43,14 +43,6 @@ public class NonClusterSpace extends Cluster{
 		//this.setAttributes();
 	}
 	
-	private void removeFromAttributes(Cell cell) {
-		for(Column c : this.attributes){
-			if(c.attrName.equals(cell.colName)){
-				c.removeCell(cell);
-				break;
-			}
-		}
-	}
 
 	public void removeCluster(){
 		assert(recentlyRemoved != null);
@@ -68,14 +60,7 @@ public class NonClusterSpace extends Cluster{
 		recentlyRemoved = null;
 	}
 	
-	private void addToAttributes(Cell cell) {
-		for(Column c : this.attributes){
-			if(c.attrName.equals(cell.colName)){
-				c.addCell(cell);
-				break;
-			}
-		}
-	}
+	
 
 	public NonClusterSpace(Model m) {
 		super();
