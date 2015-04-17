@@ -5,18 +5,22 @@ import java.util.List;
 public class Model {
 	public List<Cluster> model;
 	public int numCells = 0;
+	public NonClusterSpace ns;
 	
 	public Model(List<Cluster> m){
 		model = m;
 		addAllCells();
+		ns = new NonClusterSpace();
 	}
 	
 	public void addCluster(Cluster c){
 		model.add(c);
+		ns.addCluster(c);
 	}
 	
 	public void removeCluster(){
 		model.remove(model.size() - 1);
+		ns.removeCluster();
 	}
 	
 	void addAllCells() {
@@ -43,7 +47,7 @@ public class Model {
 		totalCost += (totalNumCells - numCells)*Cluster.averageCellCost;*/
 		//System.out.println("total2 : "+totalCost);
 		//2076808.422228242
-		double nonCluster = (new NonClusterSpace(this)).calcCost();
+		double nonCluster = ns.calcCost();//(new NonClusterSpace(this)).calcCost();
 		//System.out.println("S: "+nonCluster);
 		totalCost += nonCluster;
 		//System.out.println("done");

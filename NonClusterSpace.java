@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -5,11 +6,77 @@ import java.util.Map.Entry;
 
 
 public class NonClusterSpace extends Cluster{
+	
+	private List<Entry<Column, Cell>> recentlyRemoved;
 
 	public NonClusterSpace() {
 		super();
+		addAllFromOriginal();
+		this.setAttributes();
+		recentlyRemoved = null;
 	}
 	
+	private void addAllFromOriginal() {
+		for(Entry<Integer, Map<Column, Cell>> e : original.cells.entrySet()){
+			Map<Column, Cell> row = new HashMap<Column, Cell>();
+			row.putAll(e.getValue());
+			this.cells.put(e.getKey(), row);
+		}
+	}
+
+	public void addCluster(Cluster c){
+		recentlyRemoved = new ArrayList<Entry<Column, Cell>>();
+		for(Entry<Integer, Map<Column, Cell>> e : c.cells.entrySet()){
+			Map<Column, Cell> row = this.cells.get(e.getKey());
+			if(row != null){
+				if(!row.isEmpty()){
+					for(Entry<Column, Cell> inCluster : e.getValue().entrySet()){
+						row.remove(inCluster.getKey());
+						recentlyRemoved.add(inCluster);
+						removeFromAttributes(inCluster.getValue());
+					}
+				}else{
+					this.cells.remove(e.getKey());
+				}
+			}
+		}
+		//this.setAttributes();
+	}
+	
+	private void removeFromAttributes(Cell cell) {
+		for(Column c : this.attributes){
+			if(c.attrName.equals(cell.colName)){
+				c.removeCell(cell);
+				break;
+			}
+		}
+	}
+
+	public void removeCluster(){
+		assert(recentlyRemoved != null);
+		for(Entry<Column, Cell> r : recentlyRemoved){
+			if(this.cells.containsKey(r.getValue().rowId)){
+				Map<Column, Cell> row = this.cells.get(r.getValue().rowId);
+				row.put(r.getKey(), r.getValue());
+			}else{
+				Map<Column, Cell> row = new HashMap<Column, Cell>();
+				row.put(r.getKey(), r.getValue());
+				this.cells.put(r.getValue().rowId, row);
+			}
+			addToAttributes(r.getValue());
+		}
+		recentlyRemoved = null;
+	}
+	
+	private void addToAttributes(Cell cell) {
+		for(Column c : this.attributes){
+			if(c.attrName.equals(cell.colName)){
+				c.addCell(cell);
+				break;
+			}
+		}
+	}
+
 	public NonClusterSpace(Model m) {
 		super();
 		this.makeFromModel(m);

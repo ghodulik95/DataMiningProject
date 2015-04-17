@@ -125,4 +125,56 @@ public class Column implements Serializable{
 		}
 	}
 
+	public void removeCell(Cell cell) {
+		Integer num;
+		switch(type){
+		case INT:
+			num = value_Int.get(cell.val_Int);
+			if(num != null && num > 1){
+				value_Int.put(cell.val_Int, num - 1);
+			}else if(num != null){
+				value_Int.remove(cell.val_Int);
+			}else{
+				System.err.println("Uh OHHHHH!");
+			}
+			numRows--;
+			break;
+		case VARCHAR:
+			num = value_String.get(cell.val_String);
+			if(num != null && num > 1){
+				value_String.put(cell.val_String, num - 1);
+			}else if(num != null){
+				value_String.remove(cell.val_String);
+			}else{
+				System.err.println("Uh OHHHHH!");
+			}
+			numRows--;
+			break;
+		}
+	}
+
+	public void addCell(Cell cell) {
+		Integer num;
+		switch(type){
+		case INT:
+			num = value_Int.get(cell.val_Int);
+			if(num == null){
+				value_Int.put(cell.val_Int, 1);
+			}else{
+				value_Int.put(cell.val_Int, num + 1);
+			}
+			numRows++;
+			break;
+		case VARCHAR:
+			num = value_String.get(cell.val_String);
+			if(num == null){
+				value_String.put(cell.val_String, 1);
+			}else{
+				value_String.put(cell.val_String, num + 1);
+			}
+			numRows++;
+			break;
+		}
+	}
+
 }

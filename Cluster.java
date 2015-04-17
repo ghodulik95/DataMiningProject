@@ -103,7 +103,7 @@ public class Cluster implements Serializable{
 						}*/
 						if(first){
 							Column col = new Column(cur, total);
-							ResultSet dist = com.query("Select "+columnName+", count(*) as cnt  "+from+ "  GROUP BY "+columnName +" LIMIT 100");
+							ResultSet dist = com.query("Select "+columnName+", count(*) as cnt  "+from+ "  GROUP BY "+columnName +" ");
 							if(dist == null){
 								System.out.println("Error with query2");
 								return null;
