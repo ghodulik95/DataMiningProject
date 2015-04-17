@@ -12,7 +12,8 @@ import java.util.List;
 
 public class Testing {
 	public static void main(String args[]) throws SQLException, FileNotFoundException{
-		Cluster c = Cluster.clusterFromQuery("SELECT * ", "FROM trim3", " ");
+		Cluster c = Cluster.clusterFromQuery("select *  ",
+						 " FROM trim3 ", " LIMIT 100");
 		List<Cluster> r = ROCAT.rocat(c);
 		int i = 1;
 		for(Cluster clus : r){

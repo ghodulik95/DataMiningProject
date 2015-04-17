@@ -1,3 +1,4 @@
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -8,8 +9,8 @@ import java.util.Map.Entry;
 
 
 
-public class Column{
-	public Cell top;
+public class Column implements Serializable{
+	//public Cell top;
 	public final Cell.Type type;
 	public Map<String, Integer> value_String;
 	public Map<Integer, Integer> value_Int;
@@ -17,7 +18,7 @@ public class Column{
 	public int numRows;
 	
 	public Column(Cell top, int numRows){
-		this.top = top;
+		//this.top = top;
 		this.type = top.type;
 		this.attrName = top.colName;
 		this.numRows = numRows;

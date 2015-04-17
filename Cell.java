@@ -1,13 +1,15 @@
+import java.io.Serializable;
 
-public class Cell {
+
+public class Cell implements Serializable{
 	public static enum Type {INT, VARCHAR};
 	public final Type type;
 	public final String val_String;
 	public final int val_Int;
-	private Cell right = null;
-	private Cell left = null;
-	private Cell up = null;
-	private Cell down = null;
+	//private Cell right = null;
+	//private Cell left = null;
+	//private Cell up = null;
+	//private Cell down = null;
 	public final int rowId;
 	public final String colName;
 	
@@ -27,7 +29,7 @@ public class Cell {
 		colName = c;
 	}
 	
-	public boolean setRight(Cell r){
+	/*public boolean setRight(Cell r){
 		if( r != null && r.rowId != this.rowId){
 			return false;
 		}
@@ -74,7 +76,7 @@ public class Cell {
 	public Cell getDown(){
 		return down;
 	}
-	
+	*/
 	@Override
 	public String toString(){
 		switch(type){

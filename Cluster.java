@@ -1,3 +1,4 @@
+import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.util.ArrayList;
@@ -10,7 +11,7 @@ import java.util.Set;
 
 
 
-public class Cluster {
+public class Cluster implements Serializable{
 	public ArrayList<Column> attributes;
 	//public ArrayList<Cell> rows;
 	public Map<Integer, Map<Column, Cell>> cells;
@@ -55,9 +56,9 @@ public class Cluster {
 				originalNumRows = total;
 				ResultSetMetaData rsmd = rs.getMetaData();
 				int columnsNumber = rsmd.getColumnCount();
-				Cell left = null;
-				Cell up = null;
-				Cell firstUp = null;
+				//Cell left = null;
+				//Cell up = null;
+				//Cell firstUp = null;
 				boolean first = true;
 				do{
 					int rowId = rs.getInt(1);
@@ -85,24 +86,24 @@ public class Cluster {
 							System.out.println("NO TYPE");
 							return null;
 						}
-						cur.setLeft(left);
+						/*cur.setLeft(left);
 						if(left!=null){
 							left.setRight(cur);
 						}
-						left = cur;
+						left = cur;*/
 						
-						cur.setUp(up);
+						/*cur.setUp(up);
 						if(up != null){
 							up.setDown(cur);
 							up = up.getRight();
-						}
-						if(i == 2){
+						}*/
+						/*if(i == 2){
 							//ret.rows.add(cur);
 							firstUp = cur;
-						}
+						}*/
 						if(first){
 							Column col = new Column(cur, total);
-							ResultSet dist = com.query("Select "+columnName+", count(*) as cnt  "+from+ " "+where+" GROUP BY "+columnName);
+							ResultSet dist = com.query("Select "+columnName+", count(*) as cnt  "+from+ "  GROUP BY "+columnName +" LIMIT 100");
 							if(dist == null){
 								System.out.println("Error with query2");
 								return null;
@@ -141,7 +142,7 @@ public class Cluster {
 						
 						if(i == columnsNumber){
 							first = false;
-							up = firstUp;
+							//up = firstUp;
 						}
 					}
 				}while(rs.next());

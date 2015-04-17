@@ -17,18 +17,32 @@ public class NonClusterSpace extends Cluster{
 	}
 
 	public void makeFromModel(Model m){
+		Map<Integer, Map<Column, Cell>> cellsInModel = new HashMap<Integer, Map<Column, Cell>>();
+		
+		for(Cluster inModel: m.model){
+			for(Integer rowId : inModel.cells.keySet()){
+				if(cellsInModel.containsKey(rowId)){
+					cellsInModel.get(rowId).putAll(inModel.cells.get(rowId));
+				}else{
+					Map<Column, Cell> newRow = new HashMap<Column, Cell>();
+					newRow.putAll(inModel.cells.get(rowId));
+					cellsInModel.put(rowId, newRow);
+				}
+			}
+		}
+		
 		int numInMod = 0;
 		if(m.model.size() > 0){
 			for(Integer rowId : Cluster.original.cells.keySet()){
 				for(Entry<Column, Cell> e : Cluster.original.cells.get(rowId).entrySet()){
-					boolean hasCell = false;
-					for(Cluster inModel : m.model){
+					boolean hasCell = cellsInModel.containsKey(rowId) && cellsInModel.get(rowId).containsKey(e.getKey());
+					/*for(Cluster inModel : m.model){
 						if(inModel.cells.containsKey(rowId) && inModel.cells.get(rowId).containsKey(e.getKey())){
 							hasCell = true;
 							numInMod++;
 							break;
 						}
-					}
+					}*/
 					if(!hasCell){
 						if(this.cells.containsKey(rowId) && !this.cells.get(rowId).containsKey(e.getKey())){
 							this.cells.get(rowId).put(e.getKey(), e.getValue());
