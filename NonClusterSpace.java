@@ -185,8 +185,7 @@ public class NonClusterSpace extends Cluster{
 		recentlyAddedCells = new ArrayList<Cell>();
 	}
 
-	@Override
-	public void addCell(Cell value) {
+	public void addCellNS(Cell value) {
 		recentlyAddedCells.add(value);
 		if(!attributes.contains(new Column(value, 0))){
 			attributes.add(new Column(value, 0));
@@ -194,8 +193,7 @@ public class NonClusterSpace extends Cluster{
 		super.addCell(value);
 	}
 	
-	@Override
-	public void removeCell(Cell cell){
+	public void removeCellNS(Cell cell){
 		recentlyRemovedCells.add(cell);
 		super.removeCell(cell);
 	}

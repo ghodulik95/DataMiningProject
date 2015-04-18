@@ -62,7 +62,7 @@ public class Model {
 		ns.resetRecentlyAddedCells();
 		for(Entry<Column, Cell> rowVal : row.getValue().entrySet()){
 			if(!containedByCluster(rowVal)){
-				ns.addCell(rowVal.getValue());
+				ns.addCellNS(rowVal.getValue());
 			}
 		}
 	}
@@ -84,7 +84,7 @@ public class Model {
 		ns.resetRecentlyRemovedCells();
 		for(Cell cell : addedToClus){
 			if(ns.cells.containsKey(cell.rowId) && ns.cells.get(cell.rowId).containsKey(new Column(cell, 0))){
-				ns.removeCell(cell);
+				ns.removeCellNS(cell);
 			}
 		}
 	}

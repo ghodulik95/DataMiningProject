@@ -492,6 +492,7 @@ public class Cluster implements Serializable{
 				toReturn.add(e.getValue());
 			}
 		}
+		numRows++;
 		return toReturn;
 	}
 
@@ -499,6 +500,7 @@ public class Cluster implements Serializable{
 		for(Cell cell : cells.get(key).values()){
 			removeFromAttributes(cell);
 		}
+		numRows--;
 		cells.remove(key);
 	}
 	
@@ -547,7 +549,7 @@ public class Cluster implements Serializable{
 	
 	public void addCells(List<Cell> addedToClus) {
 		for(Cell cell : addedToClus){
-			addCell(cell);
+			this.addCell(cell);
 		}
 	}
 	
@@ -566,7 +568,7 @@ public class Cluster implements Serializable{
 	public void removeCells(List<Cell> notAddedToClus) {
 		
 		for(Cell cell : notAddedToClus){
-			removeCell(cell);
+			this.removeCell(cell);
 		}
 	}
 	

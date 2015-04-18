@@ -320,6 +320,7 @@ public class ROCAT {
 			Column a = iterator.next();
 			Collection<Integer> valDist = Cluster.findValueDistribution(m, a, prev.cells.keySet());
 			double entropy = Column.calcEntropy(valDist, prev.numRows);
+			System.out.println(entropy+" : "+prev.numRows+" - "+valDist);
 			if(entropy == 0.0){
 				//System.out.print("Best entr: "+entropy+" ");
 				return a;
@@ -329,7 +330,7 @@ public class ROCAT {
 				bestCol = a;
 			}
 		}
-		System.out.print("Best entr: "+lowestEntropy+" ");
+		//System.out.print("Best entr: "+lowestEntropy+" ");
 		return bestCol;
 	}
 }
