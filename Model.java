@@ -59,53 +59,38 @@ public class Model {
 	}
 
 	public void removeRow(Entry<Integer, Map<Column, Cell>> row) {
-		Map<Column, Cell> nsRow = ns.cells.get(row.getKey());
-		if(nsRow !=null){
-			nsRow.putAll(row.getValue());
-		}else{
-			nsRow = new HashMap<Column, Cell>();
-			nsRow.putAll(row.getValue());
-			ns.cells.put(row.getKey(), nsRow);
-			for(Cell cell : nsRow.values()){
-				ns.addToAttributes(cell);
+		ns.resetRecentlyAddedCells();
+		for(Entry<Column, Cell> rowVal : row.getValue().entrySet()){
+			if(!containedByCluster(rowVal)){
+				ns.addCell(rowVal.getValue());
 			}
 		}
 	}
 
-	public void addRow(Entry<Integer, Map<Column, Cell>> row) {
-		Map<Column, Cell> nsRow = ns.cells.get(row.getKey());
-		for(Entry<Column, Cell> rowVals : row.getValue().entrySet()){
-			nsRow.remove(rowVals.getKey());
-			ns.removeFromAttributes(rowVals.getValue());
+	private boolean containedByCluster(Entry<Column, Cell> rowVal) {
+		for(Cluster c : model){
+			if(c.cells.containsKey(rowVal.getValue().rowId) && c.cells.get(rowVal.getValue().rowId).containsKey(rowVal.getKey())){
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public void addCellsBack(Entry<Integer, Map<Column, Cell>> row) {
+		ns.removeCellsBack();
+	}
+
+	public void addCells(List<Cell> addedToClus) {
+		ns.resetRecentlyRemovedCells();
+		for(Cell cell : addedToClus){
+			if(ns.cells.containsKey(cell.rowId) && ns.cells.get(cell.rowId).containsKey(new Column(cell, 0))){
+				ns.removeCell(cell);
+			}
 		}
 	}
 
-	public void addCells(List<Cell> notAddedToClus) {
-		ns.removeCells(notAddedToClus);
-		/*for(Cell cell : notAddedToClus){
-			Map<Column, Cell> nsRow = ns.cells.get(cell.rowId);
-			if(nsRow != null){
-				nsRow.remove(new Column(cell, 1));
-				if(nsRow.isEmpty()){
-					ns.cells.remove(cell.rowId);
-				}
-				ns.removeFromAttributes(cell);
-			}
-		}*/
+	public void removeCellsBack() {
+		ns.addRemovedBack();
 	}
 
-	public void removeCells(List<Cell> addedToClus) {
-		ns.addCells(addedToClus);
-		/*for(Cell cell : addedToClus){
-			Map<Column, Cell> nsRow = ns.cells.get(cell.rowId);
-			if(nsRow != null){
-				nsRow.put(new Column(cell,1), cell);
-			}else{
-				nsRow = new HashMap<Column, Cell>();
-				nsRow.put(new Column(cell,1), cell);
-				ns.cells.put(cell.rowId, nsRow);
-			}
-			ns.addToAttributes(cell);
-		}*/
-	}
 }

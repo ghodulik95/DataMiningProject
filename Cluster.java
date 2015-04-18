@@ -530,10 +530,16 @@ public class Cluster implements Serializable{
 
 	public List<Cell> addColumn(Column a) {
 		List<Cell> toReturn = new ArrayList<Cell>();
+		boolean first = true;
 		for(Entry<Integer, Map<Column, Cell>> e: this.cells.entrySet()){
-				e.getValue().put(a, original.cells.get(e.getKey()).get(a));
-				toReturn.add(original.cells.get(e.getKey()).get(a));
-				addToAttributes(original.cells.get(e.getKey()).get(a));
+			Cell cell = original.cells.get(e.getKey()).get(a);
+			if(first){
+				first = false;
+				attributes.add(new Column(cell, 0));
+			}
+			e.getValue().put(a, cell);
+			toReturn.add(cell);
+			addToAttributes(cell);
 		}
 		
 		return toReturn;
@@ -541,29 +547,37 @@ public class Cluster implements Serializable{
 	
 	public void addCells(List<Cell> addedToClus) {
 		for(Cell cell : addedToClus){
-			Map<Column, Cell> nsRow = cells.get(cell.rowId);
-			if(nsRow != null){
-				nsRow.put(new Column(cell,1), cell);
-			}else{
-				nsRow = new HashMap<Column, Cell>();
-				nsRow.put(new Column(cell,1), cell);
-				cells.put(cell.rowId, nsRow);
-			}
-			addToAttributes(cell);
+			addCell(cell);
 		}
+	}
+	
+	public void addCell(Cell cell){
+		Map<Column, Cell> nsRow = cells.get(cell.rowId);
+		if(nsRow != null){
+			nsRow.put(new Column(cell,1), cell);
+		}else{
+			nsRow = new HashMap<Column, Cell>();
+			nsRow.put(new Column(cell,1), cell);
+			cells.put(cell.rowId, nsRow);
+		}
+		addToAttributes(cell);
 	}
 	
 	public void removeCells(List<Cell> notAddedToClus) {
 		
 		for(Cell cell : notAddedToClus){
-			Map<Column, Cell> nsRow = cells.get(cell.rowId);
-			if(nsRow != null){
-				nsRow.remove(new Column(cell, 1));
-				if(nsRow.isEmpty()){
-					cells.remove(cell.rowId);
-				}
-				removeFromAttributes(cell);
+			removeCell(cell);
+		}
+	}
+	
+	public void removeCell(Cell cell){
+		Map<Column, Cell> nsRow = cells.get(cell.rowId);
+		if(nsRow != null){
+			nsRow.remove(new Column(cell, 1));
+			if(nsRow.isEmpty()){
+				cells.remove(cell.rowId);
 			}
+			removeFromAttributes(cell);
 		}
 	}
 

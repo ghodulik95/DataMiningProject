@@ -8,12 +8,16 @@ import java.util.Map.Entry;
 public class NonClusterSpace extends Cluster{
 	
 	private List<Entry<Column, Cell>> recentlyRemoved;
+	private List<Cell> recentlyAddedCells;
+	private List<Cell> recentlyRemovedCells;
 
 	public NonClusterSpace() {
 		super();
 		addAllFromOriginal();
 		this.setAttributes();
 		recentlyRemoved = null;
+		recentlyAddedCells = null;
+		recentlyRemovedCells = null;
 	}
 	
 	private void addAllFromOriginal() {
@@ -127,6 +131,7 @@ public class NonClusterSpace extends Cluster{
 		System.out.println(numCellsIn+numInMod);*/
 	}
 	
+	
 	@Override
 	public double calcCost(){
 		double ret = 0.0;
@@ -174,6 +179,39 @@ public class NonClusterSpace extends Cluster{
 		return ret;
 		
 		
+	}
+
+	public void resetRecentlyAddedCells() {
+		recentlyAddedCells = new ArrayList<Cell>();
+	}
+
+	@Override
+	public void addCell(Cell value) {
+		recentlyAddedCells.add(value);
+		if(!attributes.contains(new Column(value, 0))){
+			attributes.add(new Column(value, 0));
+		}
+		super.addCell(value);
+	}
+	
+	@Override
+	public void removeCell(Cell cell){
+		recentlyRemovedCells.add(cell);
+		super.removeCell(cell);
+	}
+
+	public void removeCellsBack() {
+		super.removeCells(recentlyAddedCells);
+		recentlyAddedCells = null;
+	}
+
+	public void resetRecentlyRemovedCells() {
+		recentlyRemovedCells = new ArrayList<Cell>();
+	}
+	
+	public void addRemovedBack(){
+		super.addCells(recentlyRemovedCells);
+		recentlyRemovedCells = null;
 	}
 
 }

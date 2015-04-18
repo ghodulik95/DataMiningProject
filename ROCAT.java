@@ -114,7 +114,7 @@ public class ROCAT {
 								
 							}else{
 								c.addRow(row);
-								subClus.addRow(row);
+								subClus.addCellsBack(row);
 							}
 						}else{
 							List<Cell> addedToClus = c.addRow(row);
@@ -128,7 +128,7 @@ public class ROCAT {
 									changedClusters.add(i);
 								}else{
 									c.removeRow(row.getKey());
-									subClus.removeCells(addedToClus);
+									subClus.removeCellsBack();
 								}
 							}
 						}
@@ -150,7 +150,7 @@ public class ROCAT {
 								addedAttr = true;
 								outputWriter.println("A cluster added attr:"+c.attributes);
 							}else{
-								subClus.removeCells(addedToClus);
+								subClus.removeCellsBack();
 								c.removeCells(addedToClus);
 								addedAttr = false;
 							}
