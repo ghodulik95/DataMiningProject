@@ -81,7 +81,8 @@ public class Model {
 	}
 
 	public void addCells(List<Cell> notAddedToClus) {
-		for(Cell cell : notAddedToClus){
+		ns.removeCells(notAddedToClus);
+		/*for(Cell cell : notAddedToClus){
 			Map<Column, Cell> nsRow = ns.cells.get(cell.rowId);
 			if(nsRow != null){
 				nsRow.remove(new Column(cell, 1));
@@ -90,11 +91,12 @@ public class Model {
 				}
 				ns.removeFromAttributes(cell);
 			}
-		}
+		}*/
 	}
 
 	public void removeCells(List<Cell> addedToClus) {
-		for(Cell cell : addedToClus){
+		ns.addCells(addedToClus);
+		/*for(Cell cell : addedToClus){
 			Map<Column, Cell> nsRow = ns.cells.get(cell.rowId);
 			if(nsRow != null){
 				nsRow.put(new Column(cell,1), cell);
@@ -104,6 +106,6 @@ public class Model {
 				ns.cells.put(cell.rowId, nsRow);
 			}
 			ns.addToAttributes(cell);
-		}
+		}*/
 	}
 }

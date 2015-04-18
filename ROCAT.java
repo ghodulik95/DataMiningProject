@@ -5,6 +5,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -31,7 +32,7 @@ public class ROCAT {
 		File outputDir = new File("saves");
         outputDir.mkdirs();
 
-        File outputFile = new File(outputDir, "Convergence.txt");
+        File outputFile = new File(outputDir, "Convergence2.txt");
 
         PrintWriter outputWriter = null;
         try {
@@ -46,7 +47,7 @@ public class ROCAT {
 			LinkedList<Cluster> queue = new LinkedList<Cluster>();
 			queue.push(d);
 			int round = 1;
-			while(!queue.isEmpty()){
+			/*while(!queue.isEmpty()){
 				Cluster curr = queue.pop();
 				System.out.println("current subspace # rows: "+curr.numRows);
 				System.out.println("Number of relevant clusters: "+subClus.model.size());
@@ -74,9 +75,9 @@ public class ROCAT {
 					System.out.println(clus.attributes);
 				}
 				
-			}
+			}*/
 			Serializer serial = new Serializer();
-			serial.serializeClusters(subClus.model);
+			//serial.serializeClusters(subClus.model);
 			subClus.model = serial.deserializeClusters();
 			
 			List<pairOfClusters> overlaps = new ArrayList<pairOfClusters>();
@@ -95,7 +96,11 @@ public class ROCAT {
 			boolean changed = true;
 			while(changed){
 				changed = false;
-				for(Cluster c : subClus.model){
+				List<Integer> changedClusters = new ArrayList<Integer>();
+				int j = 1;
+				for(int i = 0; i < subClus.model.size(); i++){
+					Cluster c = subClus.model.get(i);
+					System.out.println("Round "+(round)+" : Cluster "+(j++));
 					for(Entry<Integer, Map<Column, Cell>> row : Cluster.original.cells.entrySet()){
 						if(c.cells.containsKey(row.getKey())){
 							c.removeRow(row.getKey());
@@ -103,8 +108,10 @@ public class ROCAT {
 							double curCost = subClus.calcCost();
 							if(curCost < cost){
 								cost = curCost;
-								outputWriter.println("A cluster changed: "+c.attributes);
+								outputWriter.println("A cluster removed row: "+c.attributes);
 								changed = true;
+								changedClusters.add(i);
+								
 							}else{
 								c.addRow(row);
 								subClus.addRow(row);
@@ -116,8 +123,9 @@ public class ROCAT {
 								double curCost = subClus.calcCost();
 								if(curCost < cost){
 									cost = curCost;
-									outputWriter.println("A cluster changed"+c.attributes);
+									outputWriter.println("A cluster added row:"+c.attributes);
 									changed = true;
+									changedClusters.add(i);
 								}else{
 									c.removeRow(row.getKey());
 									subClus.removeCells(addedToClus);
@@ -125,6 +133,30 @@ public class ROCAT {
 							}
 						}
 					}
+					
+					for(Integer ind : changedClusters){
+						c = subClus.model.get(ind);
+						System.out.println("Round "+(round)+" : Cluster "+ind);
+						Set<Column> triedAttr = new HashSet<Column>();
+						boolean addedAttr = true;
+						while(addedAttr){
+							Column a = getBestColumn(Cluster.original, c, getAttributesNotInCluster(c,triedAttr));
+							triedAttr.add(a);
+							List<Cell> addedToClus = c.addColumn(a);
+							subClus.addCells(addedToClus);
+							double curCost = subClus.calcCost();
+							if(curCost < cost){
+								cost = curCost;
+								addedAttr = true;
+								outputWriter.println("A cluster added attr:"+c.attributes);
+							}else{
+								subClus.removeCells(addedToClus);
+								c.removeCells(addedToClus);
+								addedAttr = false;
+							}
+						}
+					}
+					round++;
 				}
 			}
 			
@@ -143,6 +175,16 @@ public class ROCAT {
 		return null;
 	}
 	
+	private static Iterator<Column> getAttributesNotInCluster(Cluster c, Set<Column> triedAttr) {
+		List<Column> attr = new ArrayList<Column>();
+		for(Column a : Cluster.original.attributes){
+			if(!c.attributes.contains(a) && !triedAttr.contains(a)){
+				attr.add(a);
+			}
+		}
+		return attr.iterator();
+	}
+
 	private static void processPairs(int i, int j, Model subClus) {
 		Cluster c1 = subClus.model.get(i);
 		Cluster c2 = subClus.model.get(j);

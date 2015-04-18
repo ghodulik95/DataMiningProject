@@ -507,9 +507,11 @@ public class Cluster implements Serializable{
 		for(Column c : this.attributes){
 			if(c.attrName.equals(cell.colName)){
 				c.addCell(cell);
-				break;
+				return;
 			}
 		}
+		this.attributes.add(new Column(cell, 1));
+		System.err.println("No attribute found1");
 	}
 	
 
@@ -517,7 +519,50 @@ public class Cluster implements Serializable{
 		for(Column c : this.attributes){
 			if(c.attrName.equals(cell.colName)){
 				c.removeCell(cell);
-				break;
+				if(c.numRows == 0){
+					this.attributes.remove(c);
+				}
+				return;
+			}
+		}
+		System.err.println("No attribute found2");
+	}
+
+	public List<Cell> addColumn(Column a) {
+		List<Cell> toReturn = new ArrayList<Cell>();
+		for(Entry<Integer, Map<Column, Cell>> e: this.cells.entrySet()){
+				e.getValue().put(a, original.cells.get(e.getKey()).get(a));
+				toReturn.add(original.cells.get(e.getKey()).get(a));
+				addToAttributes(original.cells.get(e.getKey()).get(a));
+		}
+		
+		return toReturn;
+	}
+	
+	public void addCells(List<Cell> addedToClus) {
+		for(Cell cell : addedToClus){
+			Map<Column, Cell> nsRow = cells.get(cell.rowId);
+			if(nsRow != null){
+				nsRow.put(new Column(cell,1), cell);
+			}else{
+				nsRow = new HashMap<Column, Cell>();
+				nsRow.put(new Column(cell,1), cell);
+				cells.put(cell.rowId, nsRow);
+			}
+			addToAttributes(cell);
+		}
+	}
+	
+	public void removeCells(List<Cell> notAddedToClus) {
+		
+		for(Cell cell : notAddedToClus){
+			Map<Column, Cell> nsRow = cells.get(cell.rowId);
+			if(nsRow != null){
+				nsRow.remove(new Column(cell, 1));
+				if(nsRow.isEmpty()){
+					cells.remove(cell.rowId);
+				}
+				removeFromAttributes(cell);
 			}
 		}
 	}
