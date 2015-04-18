@@ -79,6 +79,7 @@ public class ROCAT {
 			Serializer serial = new Serializer();
 			//serial.serializeClusters(subClus.model);
 			subClus.model = serial.deserializeClusters();
+			subClus.makeNS();
 			
 			List<pairOfClusters> overlaps = new ArrayList<pairOfClusters>();
 			for(int i = 0; i < subClus.model.size(); i++){
@@ -108,6 +109,7 @@ public class ROCAT {
 							double curCost = subClus.calcCost();
 							if(curCost < cost){
 								cost = curCost;
+								System.out.println("A cluster removed row: "+c.attributes);
 								outputWriter.println("A cluster removed row: "+c.attributes);
 								changed = true;
 								changedClusters.add(i);
@@ -123,6 +125,7 @@ public class ROCAT {
 								double curCost = subClus.calcCost();
 								if(curCost < cost){
 									cost = curCost;
+									System.out.println("A cluster added row:"+c.attributes);
 									outputWriter.println("A cluster added row:"+c.attributes);
 									changed = true;
 									changedClusters.add(i);
@@ -133,31 +136,33 @@ public class ROCAT {
 							}
 						}
 					}
-					
-					for(Integer ind : changedClusters){
-						c = subClus.model.get(ind);
-						System.out.println("Round "+(round)+" : Cluster "+ind);
-						Set<Column> triedAttr = new HashSet<Column>();
-						boolean addedAttr = true;
-						while(addedAttr){
-							Column a = getBestColumn(Cluster.original, c, getAttributesNotInCluster(c,triedAttr));
-							triedAttr.add(a);
-							List<Cell> addedToClus = c.addColumn(a);
-							subClus.addCells(addedToClus);
-							double curCost = subClus.calcCost();
-							if(curCost < cost){
-								cost = curCost;
-								addedAttr = true;
-								outputWriter.println("A cluster added attr:"+c.attributes);
-							}else{
-								subClus.removeCellsBack();
-								c.removeCells(addedToClus);
-								addedAttr = false;
-							}
+				}
+				Cluster c;
+				for(Integer ind : changedClusters){
+					c = subClus.model.get(ind);
+					System.out.println("Round "+(round)+" : Cluster "+ind);
+					Set<Column> triedAttr = new HashSet<Column>();
+					boolean addedAttr = true;
+					while(addedAttr){
+						Column a = getBestColumn(Cluster.original, c, getAttributesNotInCluster(c,triedAttr));
+						triedAttr.add(a);
+						List<Cell> addedToClus = c.addColumn(a);
+						subClus.addCells(addedToClus);
+						double curCost = subClus.calcCost();
+						if(curCost < cost){
+							cost = curCost;
+							addedAttr = true;
+							System.out.println("A cluster added attr:"+c.attributes);
+							outputWriter.println("A cluster added attr:"+c.attributes);
+						}else{
+							subClus.removeCellsBack();
+							c.removeCells(addedToClus);
+							addedAttr = false;
 						}
 					}
-					round++;
 				}
+				round++;
+				
 			}
 			
 			return subClus.model;

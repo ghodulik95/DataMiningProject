@@ -16,6 +16,10 @@ public class Model {
 		ns = new NonClusterSpace();
 	}
 	
+	public void makeNS(){
+		ns.makeFromModel(this);
+	}
+	
 	public void addCluster(Cluster c){
 		model.add(c);
 		ns.addCluster(c);
