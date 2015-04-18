@@ -96,7 +96,7 @@ public class ROCAT {
 			boolean changed = true;
 			while(changed){
 				changed = false;
-				List<Integer> changedClusters = new ArrayList<Integer>();
+				Set<Integer> changedClusters = new HashSet<Integer>();
 				int j = 1;
 				for(int i = 0; i < subClus.model.size(); i++){
 					Cluster c = subClus.model.get(i);
