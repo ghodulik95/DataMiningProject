@@ -18,7 +18,7 @@ import java.util.PriorityQueue;
 
 
 public class ROCAT {
-	
+	public static int numCellsOverlap = 0;
 	public static class pairOfClusters{
 		public Cluster c1;
 		public Cluster c2;
@@ -32,7 +32,7 @@ public class ROCAT {
 		File outputDir = new File("saves");
         outputDir.mkdirs();
 
-        File outputFile = new File(outputDir, "Convergence2.txt");
+        File outputFile = new File(outputDir, "Convergence3.txt");
 
         PrintWriter outputWriter = null;
         try {
@@ -47,7 +47,7 @@ public class ROCAT {
 			LinkedList<Cluster> queue = new LinkedList<Cluster>();
 			queue.push(d);
 			int round = 1;
-			/*while(!queue.isEmpty()){
+			while(!queue.isEmpty()){
 				Cluster curr = queue.pop();
 				System.out.println("current subspace # rows: "+curr.numRows);
 				System.out.println("Number of relevant clusters: "+subClus.model.size());
@@ -75,11 +75,11 @@ public class ROCAT {
 					System.out.println(clus.attributes);
 				}
 				
-			}*/
-			Serializer serial = new Serializer();
+			}
+			//Serializer serial = new Serializer();
 			//serial.serializeClusters(subClus.model);
-			subClus.model = serial.deserializeClusters();
-			subClus.makeNS();
+			//subClus.model = serial.deserializeClusters();
+			//subClus.makeNS();
 			
 			List<pairOfClusters> overlaps = new ArrayList<pairOfClusters>();
 			for(int i = 0; i < subClus.model.size(); i++){
@@ -164,6 +164,16 @@ public class ROCAT {
 				round++;
 				
 			}
+			overlaps = new ArrayList<pairOfClusters>();
+			for(int i = 0; i < subClus.model.size(); i++){
+				for(int j = i+1; j < subClus.model.size(); j++){
+					if(overlapping(subClus.model.get(i), subClus.model.get(j))){
+						overlaps.add(new pairOfClusters(subClus.model.get(i), subClus.model.get(j)));
+					}
+				}
+			}
+			System.out.println(overlaps.size()+" clusters overlap\n"+numCellsOverlap+" cells overlap");
+			outputWriter.println(overlaps.size()+" clusters overlap\n"+numCellsOverlap+" cells overlap");
 			
 			return subClus.model;
 		
@@ -202,15 +212,18 @@ public class ROCAT {
 
 	private static boolean overlapping(Cluster c1, Cluster c2) {
 		boolean colsOverlap = false;
+		int numAttrShare = 0;
 		colsCheck:
 		for(Column col1 : c1.attributes){
 			for(Column col2 : c2.attributes){
 				if(col1.equals(col2)){
 					colsOverlap = true;
-					break colsCheck;
+					//break colsCheck;
+					numAttrShare++;
 				}
 			}
 		}
+		int numRowsOverlap = 0;
 		if(colsOverlap){
 			Cluster itOver;
 			Cluster checking;
@@ -223,11 +236,12 @@ public class ROCAT {
 			}
 			for(Integer rowId : itOver.cells.keySet()){
 				if(checking.cells.containsKey(rowId)){
-					return true;
+					numRowsOverlap++;
 				}
 			}
 		}
-		return false;
+		numCellsOverlap += numRowsOverlap*numAttrShare;
+		return numRowsOverlap > 0;
 	}
 
 	private static double getOriginalCost(Cluster d) {
@@ -325,7 +339,7 @@ public class ROCAT {
 			Column a = iterator.next();
 			Collection<Integer> valDist = Cluster.findValueDistribution(m, a, prev.cells.keySet());
 			double entropy = Column.calcEntropy(valDist, prev.numRows);
-			System.out.println(entropy+" : "+prev.numRows+" - "+valDist);
+			//System.out.println(entropy+" : "+prev.numRows+" - "+valDist);
 			if(entropy == 0.0){
 				//System.out.print("Best entr: "+entropy+" ");
 				return a;

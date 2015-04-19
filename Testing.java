@@ -21,7 +21,7 @@ public class Testing {
 		File outputDir = new File("saves");
         outputDir.mkdirs();
 
-        File outputFile = new File(outputDir, "Optimized1SearchPhaseResults_tryConv.txt");
+        File outputFile = new File(outputDir, "Optimized1SearchPhaseResults_tryConv3.txt");
 
         PrintWriter outputWriter = null;
         try {
