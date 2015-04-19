@@ -32,7 +32,7 @@ public class ROCAT {
 		File outputDir = new File("saves");
         outputDir.mkdirs();
 
-        File outputFile = new File(outputDir, "Convergence3.txt");
+        File outputFile = new File(outputDir, "Convergence4.txt");
 
         PrintWriter outputWriter = null;
         try {
@@ -84,16 +84,16 @@ public class ROCAT {
 			List<pairOfClusters> overlaps = new ArrayList<pairOfClusters>();
 			for(int i = 0; i < subClus.model.size(); i++){
 				for(int j = i+1; j < subClus.model.size(); j++){
-					if(overlapping(subClus.model.get(i), subClus.model.get(j))){
+					if(overlapping(subClus.model.get(i), subClus.model.get(j), outputWriter)){
 						overlaps.add(new pairOfClusters(subClus.model.get(i), subClus.model.get(j)));
 					}
 				}
 			}
-			System.out.println(overlaps.size()+" clusters overlap");
-			if(!overlaps.isEmpty()){
+			outputWriter.println(overlaps.size()+" clusters overlap");
+			//if(!overlaps.isEmpty()){
 				//Combining phase
-			}
-			
+			//}
+			round = 1;
 			boolean changed = true;
 			while(changed){
 				changed = false;
@@ -167,7 +167,7 @@ public class ROCAT {
 			overlaps = new ArrayList<pairOfClusters>();
 			for(int i = 0; i < subClus.model.size(); i++){
 				for(int j = i+1; j < subClus.model.size(); j++){
-					if(overlapping(subClus.model.get(i), subClus.model.get(j))){
+					if(overlapping(subClus.model.get(i), subClus.model.get(j), outputWriter)){
 						overlaps.add(new pairOfClusters(subClus.model.get(i), subClus.model.get(j)));
 					}
 				}
@@ -200,7 +200,7 @@ public class ROCAT {
 		return attr.iterator();
 	}
 
-	private static void processPairs(int i, int j, Model subClus) {
+	/*private static void processPairs(int i, int j, Model subClus) {
 		Cluster c1 = subClus.model.get(i);
 		Cluster c2 = subClus.model.get(j);
 		if(overlapping(c1,c2)){
@@ -208,9 +208,9 @@ public class ROCAT {
 		}else{
 			
 		}
-	}
+	}*/
 
-	private static boolean overlapping(Cluster c1, Cluster c2) {
+	private static boolean overlapping(Cluster c1, Cluster c2, PrintWriter outputWriter) {
 		boolean colsOverlap = false;
 		int numAttrShare = 0;
 		colsCheck:
@@ -224,6 +224,7 @@ public class ROCAT {
 			}
 		}
 		int numRowsOverlap = 0;
+		List<Integer> rowIds = new ArrayList<Integer>();
 		if(colsOverlap){
 			Cluster itOver;
 			Cluster checking;
@@ -236,11 +237,16 @@ public class ROCAT {
 			}
 			for(Integer rowId : itOver.cells.keySet()){
 				if(checking.cells.containsKey(rowId)){
+					rowIds.add(rowId);
 					numRowsOverlap++;
 				}
 			}
 		}
-		numCellsOverlap += numRowsOverlap*numAttrShare;
+		if(numRowsOverlap > 0){
+			numCellsOverlap += numRowsOverlap*numAttrShare;
+			outputWriter.println("Clusters overlap: \n"+c1.attributes+"\n"+c2.attributes);
+			outputWriter.println("At rows: "+rowIds);
+		}
 		return numRowsOverlap > 0;
 	}
 
