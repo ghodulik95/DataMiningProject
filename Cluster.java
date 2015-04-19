@@ -513,7 +513,7 @@ public class Cluster implements Serializable{
 			}
 		}
 		this.attributes.add(new Column(cell, 1));
-		System.err.println("No attribute found1");
+		//System.err.println("No attribute found1");
 	}
 	
 

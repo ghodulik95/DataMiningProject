@@ -32,7 +32,7 @@ public class ROCAT {
 		File outputDir = new File("saves");
         outputDir.mkdirs();
 
-        File outputFile = new File(outputDir, "Convergence4.txt");
+        File outputFile = new File(outputDir, "classifyRacecatProc.txt");
 
         PrintWriter outputWriter = null;
         try {
@@ -93,7 +93,7 @@ public class ROCAT {
 			//if(!overlaps.isEmpty()){
 				//Combining phase
 			//}
-			round = 1;
+			/*round = 1;
 			boolean changed = true;
 			while(changed){
 				changed = false;
@@ -163,7 +163,7 @@ public class ROCAT {
 				}
 				round++;
 				
-			}
+			}*/
 			overlaps = new ArrayList<pairOfClusters>();
 			for(int i = 0; i < subClus.model.size(); i++){
 				for(int j = i+1; j < subClus.model.size(); j++){
