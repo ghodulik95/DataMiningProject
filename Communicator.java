@@ -6,22 +6,24 @@ import java.sql.ResultSetMetaData;
 public class Communicator {
 		// JDBC driver name and database URL
 	   public static final String JDBC_DRIVER = "com.mysql.jdbc.Driver";  
-	   public static final String DB_URL = "jdbc:mysql://localhost/dataminingproject";
+	   private String DB_URL;
 
 	   //  Database credentials
-	   public static final String USER = "root";
-	   public static final String PASS = "changeme";
+	   private String user;
+	   private String pass;
 	   
 	   private java.sql.Connection conn;
 	   
-	   public Communicator(){
-		      
+	   public Communicator(String username, String password, String dbname){
+		      user = username;
+		      pass = password;
+		      DB_URL = "jdbc:mysql://localhost/"+dbname;
 	   }
 	   
 	   public boolean connect(){
 		   try{
 			   Class.forName("com.mysql.jdbc.Driver").newInstance();
-			   conn = DriverManager.getConnection(DB_URL,USER,PASS);
+			   conn = DriverManager.getConnection(DB_URL,user,pass);
 		   }catch(Exception e){
 			   e.printStackTrace();
 			   return false;

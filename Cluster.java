@@ -35,8 +35,9 @@ public class Cluster implements Serializable{
 		numRows = 0;
 	}
 	
-	public static Cluster clusterFromQuery(String select, String from, String where){
-		Communicator com = new Communicator();
+	public static Cluster clusterFromQuery(String select, String from, String where, 
+			String uname, String pass, String dbname){
+		Communicator com = new Communicator(uname, pass, dbname);
 		if(!com.connect()){
 			return null;
 		}
