@@ -42,7 +42,6 @@ public class ROCAT {
 		
 		
 			double cost = Double.POSITIVE_INFINITY;
-			System.out.println("Orig cost "+cost);
 			Model subClus = new Model(new ArrayList<Cluster>());
 			LinkedList<Cluster> queue = new LinkedList<Cluster>();
 			queue.push(d);
@@ -74,7 +73,7 @@ public class ROCAT {
 			int i = 1;
 			for(Cluster c : subClus.model){
 				System.out.println("Cluster "+i+":"+c.attributes);
-				outputWriter.println("Cluster "+i+":"+c.attributes);
+				outputWriter.println("Cluster "+(i++)+":"+c.attributes);
 			}
 			System.out.println("Searching Phase completed");
 			outputWriter.println("Searching Phase completed");
