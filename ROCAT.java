@@ -294,7 +294,6 @@ public class ROCAT {
     			subClus.addCluster(prev);
     			subClus.addAllCells();
     			double cost = subClus.calcCost();
-    			System.out.println(cost);
     			
     			if(Double.isNaN(cost)){
     				return best;
