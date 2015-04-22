@@ -2,14 +2,15 @@ import java.io.Serializable;
 
 
 public class Cell implements Serializable{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	public static enum Type {INT, VARCHAR};
 	public final Type type;
 	public final String val_String;
 	public final int val_Int;
-	//private Cell right = null;
-	//private Cell left = null;
-	//private Cell up = null;
-	//private Cell down = null;
 	public final int rowId;
 	public final String colName;
 	
@@ -29,54 +30,6 @@ public class Cell implements Serializable{
 		colName = c;
 	}
 	
-	/*public boolean setRight(Cell r){
-		if( r != null && r.rowId != this.rowId){
-			return false;
-		}
-		right = r;
-		return true;
-	}
-	
-	public boolean setLeft(Cell l){
-		if(l != null && l.rowId != this.rowId){
-			return false;
-		}
-		left = l;
-		return true;
-	}
-	
-	public boolean setUp(Cell u){
-		if(u != null && !u.colName.equals(this.colName)){
-			return false;
-		}
-		up = u;
-		return true;
-	}
-	
-	public boolean setDown(Cell u){
-		if(u != null && !u.colName.equals(this.colName)){
-			return false;
-		}
-		down = u;
-		return true;
-	}
-	
-	public Cell getLeft(){
-		return left;
-	}
-	
-	public Cell getRight(){
-		return right;
-	}
-	
-	public Cell getUp(){
-		return up;
-	}
-	
-	public Cell getDown(){
-		return down;
-	}
-	*/
 	@Override
 	public String toString(){
 		switch(type){

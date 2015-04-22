@@ -10,7 +10,10 @@ import java.util.Map.Entry;
 
 
 public class Column implements Serializable{
-	//public Cell top;
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	public final Cell.Type type;
 	public Map<String, Integer> value_String;
 	public Map<Integer, Integer> value_Int;
@@ -18,19 +21,16 @@ public class Column implements Serializable{
 	public int numRows;
 	
 	public Column(Cell top, int numRows){
-		//this.top = top;
 		this.type = top.type;
 		this.attrName = top.colName;
 		this.numRows = numRows;
 		switch(type){
 			case INT:
 				value_Int = new HashMap<Integer, Integer>();
-				//value_Int.put(top.val_Int, 1);
 				value_String = null;
 				break;
 			case VARCHAR:
 				value_String = new HashMap<String, Integer>();
-				//value_String.put(top.val_String, 1);
 				value_Int = null;
 				break;
 		}
@@ -134,8 +134,6 @@ public class Column implements Serializable{
 				value_Int.put(cell.val_Int, num - 1);
 			}else if(num != null){
 				value_Int.remove(cell.val_Int);
-			}else{
-				//System.err.println("Uh OHHHHH!");
 			}
 			numRows--;
 			break;
@@ -145,8 +143,6 @@ public class Column implements Serializable{
 				value_String.put(cell.val_String, num - 1);
 			}else if(num != null){
 				value_String.remove(cell.val_String);
-			}else{
-				//System.err.println("Uh OHHHHH!");
 			}
 			numRows--;
 			break;

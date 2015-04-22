@@ -12,8 +12,11 @@ import java.util.Set;
 
 
 public class Cluster implements Serializable{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	public ArrayList<Column> attributes;
-	//public ArrayList<Cell> rows;
 	public Map<Integer, Map<Column, Cell>> cells;
 	public int numRows;
 	public static int originalNumRows = -1;
@@ -23,7 +26,6 @@ public class Cluster implements Serializable{
 	public static double originalNumAttr;
 	
 	public Cluster(int n){
-		//rows = new ArrayList<Cell>();
 		attributes = new ArrayList<Column>();
 		cells = new HashMap<Integer, Map<Column, Cell>>();
 		numRows = n;
@@ -57,9 +59,6 @@ public class Cluster implements Serializable{
 				originalNumRows = total;
 				ResultSetMetaData rsmd = rs.getMetaData();
 				int columnsNumber = rsmd.getColumnCount();
-				//Cell left = null;
-				//Cell up = null;
-				//Cell firstUp = null;
 				boolean first = true;
 				do{
 					int rowId = rs.getInt(1);
@@ -72,11 +71,9 @@ public class Cluster implements Serializable{
 					for (int i = 2; i <= columnsNumber; i++) {
 						int t = rsmd.getColumnType(i);
 						columnName = rsmd.getColumnName(i);
-						//System.out.println(columnName+" -- "+t);
 						Cell cur;
 						if(t == 12){
 							type = Cell.Type.VARCHAR;
-							//System.out.println(columnName);
 							colValString = rs.getString(i);
 							cur = new Cell(type, colValString, rowId, columnName);
 						}else if(t == 4){
@@ -87,21 +84,6 @@ public class Cluster implements Serializable{
 							System.out.println("NO TYPE");
 							return null;
 						}
-						/*cur.setLeft(left);
-						if(left!=null){
-							left.setRight(cur);
-						}
-						left = cur;*/
-						
-						/*cur.setUp(up);
-						if(up != null){
-							up.setDown(cur);
-							up = up.getRight();
-						}*/
-						/*if(i == 2){
-							//ret.rows.add(cur);
-							firstUp = cur;
-						}*/
 						if(first){
 							Column col = new Column(cur, total);
 							ResultSet dist = com.query("Select "+columnName+", count(*) as cnt  "+from+ "  GROUP BY "+columnName +" ");
@@ -143,7 +125,6 @@ public class Cluster implements Serializable{
 						
 						if(i == columnsNumber){
 							first = false;
-							//up = firstUp;
 						}
 					}
 				}while(rs.next());
@@ -151,22 +132,6 @@ public class Cluster implements Serializable{
 				original = ret;
 				setAverageCellSize();
 				originalNumAttr = original.attributes.size();
-				/*for(Column col : ret.attributes){
-
-					int count = 0;
-					if(col.type == Cell.Type.INT){
-						for(Integer in : col.value_Int.values()){
-							count += in;
-						}
-					}else{
-						for(Integer in : col.value_String.values()){
-							count += in;
-						}
-					}
-					if(count != 4952){
-						System.out.println(col.attrName);
-					}
-				}*/
 				return ret;
 			}
 		}catch(Exception e){
@@ -202,31 +167,7 @@ public class Cluster implements Serializable{
 			ret += "\n";
 			System.out.print(ret);
 			ret = "";
-		}/*
-		Cell cur = rows.get(0);
-		Cell below = cur.getDown();
-		assert(cur != null);
-		int cnt = 0;
-		printLoop:
-		while(true){
-			boolean first = true;
-			while(cur != null){
-				if(!first)
-					ret += ", ";
-				ret += cur.toString();
-				cur = cur.getRight();
-				first = false;
-			}
-			if(below != null){
-				below = below.getDown();
-				cur = below;
-				ret += "\n";
-				cnt++;
-				return null;
-			}else{
-				break printLoop;
-			}
-		}*/
+		}
 		return ret;
 	}
 	
@@ -389,10 +330,6 @@ public class Cluster implements Serializable{
 			attrAssignmentCost += -originalNumAttr*(1 - probInThis)*Math.log(1 - probInThis)/Math.log(2);
 
 		double probabilities = 0.5*numParams*Math.log(numRows)/Math.log(2);
-		/*System.out.println("CC "+codingCost);
-		System.out.println("AT "+attrAssignmentCost);
-		System.out.println("PR "+probabilities);
-		System.out.println("OB "+objAssignmentCost);*/
 		return codingCost + objAssignmentCost + attrAssignmentCost + probabilities;
 	}
 	
@@ -414,7 +351,6 @@ public class Cluster implements Serializable{
 			ret.cells.put(rowId, row);
 		}
 		ret.setAttributes();
-		//ret.printAttr();
 		return ret;
 	}
 
@@ -424,27 +360,6 @@ public class Cluster implements Serializable{
 		Map<Column, Cell> r = new HashMap<Column, Cell>();
 		for(Integer row : rowIds){
 			Cell cur = m.cells.get(row).get(a);
-			/*if(!ret.attributes.contains(a)){
-				ret.attributes.add(new Column( cur, rowIds.size()));
-			}else{
-				Column attr = ret.attributes.get(ret.attributes.indexOf(a));
-				switch(cur.type){
-					case INT:
-						if(attr.value_Int.containsKey(cur.val_Int)){
-							attr.value_Int.put(cur.val_Int, attr.value_Int.get(cur.val_Int) + 1);
-						}else{
-							attr.value_Int.put(cur.val_Int, 1);
-						}
-						break;
-					case VARCHAR:
-						if(attr.value_String.containsKey(cur.val_String)){
-							attr.value_String.put(cur.val_String, attr.value_String.get(cur.val_String) + 1);
-						}else{
-							attr.value_String.put(cur.val_String, 1);
-						}
-						break;
-				}
-			}*/
 			r.put(a, cur);
 			ret.cells.put(row, r);
 			r = new HashMap<Column, Cell>();
@@ -514,7 +429,6 @@ public class Cluster implements Serializable{
 			}
 		}
 		this.attributes.add(new Column(cell, 1));
-		//System.err.println("No attribute found1");
 	}
 	
 
@@ -528,7 +442,6 @@ public class Cluster implements Serializable{
 				return;
 			}
 		}
-		System.err.println("No attribute found2");
 	}
 
 	public List<Cell> addColumn(Column a) {

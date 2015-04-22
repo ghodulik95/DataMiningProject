@@ -1,5 +1,4 @@
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -43,22 +42,12 @@ public class Model {
 
 	public double calcCost(){
 		double totalCost = 0.0;
-		int i = 0;
 		for(Cluster c : model){
 			double cost = c.calcCost();
 			totalCost += cost;
-			//c.printAttr();
-			//System.out.println("cost"+(++i)+" :"+cost);
 		}
-		/*int totalNumCells = Cluster.original.numRows * Cluster.original.attributes.size();
-		totalCost += (totalNumCells - numCells)*Cluster.averageCellCost;*/
-		//System.out.println("total2 : "+totalCost);
-		//2076808.422228242
-		double nonCluster = ns.calcCost();//(new NonClusterSpace(this)).calcCost();
-		//System.out.println("S: "+nonCluster);
+		double nonCluster = ns.calcCost();
 		totalCost += nonCluster;
-		//System.out.println("done");
-		//2062018.7929820728
 		return totalCost;
 	}
 
