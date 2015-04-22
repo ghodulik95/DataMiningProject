@@ -9,8 +9,8 @@ public class Communicator {
 	   public static final String DB_URL = "jdbc:mysql://localhost/dataminingproject";
 
 	   //  Database credentials
-	   public static final String USER = "george";
-	   public static final String PASS = "1234";
+	   public static final String USER = "root";
+	   public static final String PASS = "changeme";
 	   
 	   private java.sql.Connection conn;
 	   

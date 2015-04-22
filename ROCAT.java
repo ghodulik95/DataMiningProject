@@ -28,11 +28,11 @@ public class ROCAT {
 		}
 	}
 	
-	public static List<Cluster> rocat(Cluster d){
+	public static List<Cluster> rocat(Cluster d, String procOutput){
 		File outputDir = new File("saves");
         outputDir.mkdirs();
 
-        File outputFile = new File(outputDir, "classifyRacecatProc.txt");
+        File outputFile = new File(outputDir, procOutput+".txt");
 
         PrintWriter outputWriter = null;
         try {
@@ -93,15 +93,16 @@ public class ROCAT {
 			//if(!overlaps.isEmpty()){
 				//Combining phase
 			//}
-			/*round = 1;
+			round = 1;
 			boolean changed = true;
 			while(changed){
 				changed = false;
 				Set<Integer> changedClusters = new HashSet<Integer>();
 				int j = 1;
-				for(int i = 0; i < subClus.model.size(); i++){
+				for(int i = 0; i <subClus.model.size() ; i++){
 					Cluster c = subClus.model.get(i);
-					System.out.println("Round "+(round)+" : Cluster "+(j++));
+					System.out.println("Round "+(round)+" : Cluster "+(j));
+					outputWriter.println("Round "+(round)+" : Cluster "+(j++));
 					for(Entry<Integer, Map<Column, Cell>> row : Cluster.original.cells.entrySet()){
 						if(c.cells.containsKey(row.getKey())){
 							c.removeRow(row.getKey());
@@ -140,7 +141,8 @@ public class ROCAT {
 				Cluster c;
 				for(Integer ind : changedClusters){
 					c = subClus.model.get(ind);
-					System.out.println("Round "+(round)+" : Cluster "+ind);
+					System.out.println("Round "+(round)+" : Cluster "+(ind+1));
+					outputWriter.println("Round "+(round)+" : Cluster "+(ind+1));
 					Set<Column> triedAttr = new HashSet<Column>();
 					boolean addedAttr = true;
 					while(addedAttr){
@@ -163,7 +165,7 @@ public class ROCAT {
 				}
 				round++;
 				
-			}*/
+			}
 			overlaps = new ArrayList<pairOfClusters>();
 			for(int i = 0; i < subClus.model.size(); i++){
 				for(int j = i+1; j < subClus.model.size(); j++){

@@ -13,18 +13,38 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Scanner;
 
 
 public class Testing {
 	public static void main(String args[]) throws SQLException, FileNotFoundException{
+		Scanner sn = new Scanner(System.in);
+		System.out.println("Please give the tablename name: ");
+		String tname = sn.nextLine();
+		System.out.println("Please give attribute to test class: ");
+		String attrToTest = sn.nextLine();
+		System.out.println("Please give cluster output file: ");
+		String clusOutput = sn.nextLine();
+		System.out.println("Please give process output file: ");
+		String procOutput = sn.nextLine();
+		
+
+        Communicator comm = new Communicator();
+        comm.connect();
+        if(null == comm.query("SELECT "+attrToTest+" FROM scaled1 LIMIT 1")){
+        	System.out.println("Invalid attr "+attrToTest);
+        	return;
+        }
+        
+		
 		Cluster c = Cluster.clusterFromQuery("select *  ",
-						 " FROM scaled1_noRacecat ", " ");
-		List<Cluster> r = ROCAT.rocat(c);
+						 " FROM "+tname+" ", " ");
+		List<Cluster> r = ROCAT.rocat(c, procOutput);
 		int i = 1;
 		File outputDir = new File("saves");
         outputDir.mkdirs();
 
-        File outputFile = new File(outputDir, "classifyRacecatClus.txt");
+        File outputFile = new File(outputDir, clusOutput+".txt");
 
         PrintWriter outputWriter = null;
         try {
@@ -32,29 +52,27 @@ public class Testing {
 
             outputWriter = new PrintWriter(outputFile.getAbsolutePath());
 
-            Communicator comm = new Communicator();
-            comm.connect();
     		for(Cluster clus : r){
     			outputWriter.println("Cluster "+(i++)+": "+clus.attributes);
-    			Map<String, Integer> classifications = new HashMap<String, Integer>();
-    			for(Integer rowId : clus.cells.keySet()){
-    				ResultSet res = comm.query("SELECT racecat FROM scaled1 where min_trim_id = "+rowId);
-    				res.next();
-    				String cl = res.getString(1);
-    				if(classifications.containsKey(cl)){
-    					classifications.put(cl, classifications.get(cl) + 1);
-    				}else{
-    					classifications.put(cl, 1);
-    				}
+    			if(!attrToTest.equals("NONE")){
+	    			Map<String, Integer> classifications = new HashMap<String, Integer>();
+	    			for(Integer rowId : clus.cells.keySet()){
+	    				ResultSet res = comm.query("SELECT "+attrToTest+" FROM scaled1 where min_trim_id = "+rowId);
+	    				res.next();
+	    				String cl = res.getString(1);
+	    				if(classifications.containsKey(cl)){
+	    					classifications.put(cl, classifications.get(cl) + 1);
+	    				}else{
+	    					classifications.put(cl, 1);
+	    				}
+	    			}
+	    			for(Entry<String,Integer> e : classifications.entrySet()){
+	    				outputWriter.printf(e.getKey()+": "+e.getValue()+" = %.2f %%\n", (((e.getValue()*1.0)/clus.numRows)*100));
+	    			}
+	    			outputWriter.println();
     			}
-    			for(Entry<String,Integer> e : classifications.entrySet()){
-    				outputWriter.printf(e.getKey()+": "+e.getValue()+" = %.2f %%\n", (((e.getValue()*1.0)/clus.numRows)*100));
-    			}
-    			outputWriter.println();
     		}
     		
-    		Serializer serial = new Serializer();
-			serial.serializeClusters(r);
     		
             
         } catch (FileNotFoundException e) {
